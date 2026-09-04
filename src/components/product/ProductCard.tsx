@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Product } from "@/types/catalog";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { buildProductWhatsAppUrl } from "@/lib/whatsapp";
-import { Shield, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
@@ -24,11 +24,6 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           {product.badge && (
             <span className="px-2.5 py-1 text-[9px] uppercase tracking-luxury font-semibold bg-vantaire-black/85 backdrop-blur-md text-vantaire-champagne border border-vantaire-champagne/30">
               {product.badge}
-            </span>
-          )}
-          {product.polarized && (
-            <span className="px-2 py-0.5 text-[8px] uppercase tracking-wider font-medium bg-emerald-950/85 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-              <Shield className="w-2.5 h-2.5" /> Polarized
             </span>
           )}
         </div>
@@ -50,8 +45,8 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       <div className="p-5 flex flex-col flex-1 justify-between gap-4">
         <div>
           <div className="flex items-center justify-between text-[10px] uppercase tracking-luxury text-vantaire-muted mb-1">
-            <span>{product.frameShape} • {product.frameMaterial}</span>
-            <span className="text-emerald-400 font-medium">Demo Stock</span>
+            <span>{product.frameShape} • {product.frameLook}</span>
+            <span className="text-amber-400 font-medium">Demo Catalog</span>
           </div>
 
           <h3 className="font-serif text-lg font-normal text-vantaire-warmWhite group-hover:text-vantaire-champagne transition-colors">

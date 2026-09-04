@@ -9,18 +9,19 @@ export type FrameShape =
   | "Oversized";
 
 export type LensType = 
-  | "Polarized"
-  | "Gradient"
-  | "Solid UV400"
-  | "Mirrored"
-  | "Photochromic";
+  | "Polarized-Style Tint"
+  | "Gradient Tint"
+  | "Dark Sun Tint"
+  | "Mirrored Finish";
 
-export type FrameMaterial = 
-  | "Italian Acetate"
-  | "Aerospace Grade Titanium"
-  | "Stainless Steel Alloy"
-  | "Hand-Finished Monel Metal"
-  | "Bio-Based Eco Acetate";
+export type FrameLook =
+  | "Dark Metal-Look Alloy"
+  | "Tortoise Acetate-Look"
+  | "Gold-Tone Metal-Look"
+  | "Jet Black Acetate-Look"
+  | "Matte Slate Finish"
+  | "Translucent Crystal Finish"
+  | "Graphite Sport-Look";
 
 export type CollectionSlug = 
   | "all"
@@ -30,12 +31,6 @@ export type CollectionSlug =
   | "cat-eye"
   | "polarized"
   | "sport";
-
-export interface ProductDimensions {
-  lensWidth: number;   // mm
-  bridgeWidth: number; // mm
-  templeLength: number;// mm
-}
 
 export interface Product {
   id: string;
@@ -53,15 +48,12 @@ export interface Product {
   shortDescription: string;
   images: string[];
   frameShape: FrameShape;
-  frameMaterial: FrameMaterial;
+  frameLook: FrameLook;
   frameColor: string;
   lensColor: string;
   lensType: LensType;
-  polarized: boolean;
-  uvProtection: string; // e.g. "100% UVA / UVB (UV400)"
+  styleCategory: "Classic" | "Contemporary" | "Sport" | "Retro" | "Architectural";
   fit: "Narrow" | "Medium" | "Wide" | "Universal";
-  dimensions: ProductDimensions;
-  weightGrams: number;
   features: string[];
   badge?: "Bestseller" | "New Arrival" | "Limited Edition" | "Signature Edit";
   featured?: boolean;

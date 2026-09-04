@@ -25,7 +25,7 @@ export default function FaqPage() {
     },
     {
       q: "Are VANTAIRE sunglasses UV-protective and polarized?",
-      a: "Yes. All our sunglasses provide UV400 solar protection to filter harsh ultraviolet radiation. Frame models designated as 'Polarized' feature specialized glare-reduction filter matrices designed to cut through water and road glare."
+      a: "Our sunglasses feature dark sun-tint and gradient-tint lenses designed for outdoor solar glare comfort. For specific technical laboratory UV ratings or polarized filter specifications on individual models, please inquire directly with our concierge on WhatsApp prior to ordering."
     },
     {
       q: "What is your exchange policy if the frame does not fit?",

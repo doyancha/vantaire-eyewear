@@ -27,7 +27,7 @@ export function Hero() {
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 border border-vantaire-champagne/40 bg-vantaire-black/80 backdrop-blur-md mb-6 animate-fade-in">
           <span className="w-1.5 h-1.5 rounded-full bg-vantaire-champagne animate-ping" />
           <span className="text-[10px] md:text-xs uppercase tracking-luxury text-vantaire-sand font-medium">
-            2026 Architectural Eyewear Edition
+            2026 Eyewear Lookbook
           </span>
         </div>
 
@@ -38,7 +38,7 @@ export function Hero() {
 
         {/* Editorial Subtitle */}
         <p className="mt-6 text-sm sm:text-base md:text-lg text-vantaire-sand/90 max-w-2xl font-sans font-light leading-relaxed tracking-wide">
-          Hand-finished Italian acetate and aerospace-grade titanium sunglasses engineered with precision 100% UV400 and Japanese polarized optics.
+          Distinctive sunglasses silhouettes featuring architectural acetate and metal-look contours paired with refined sun tint optics.
         </p>
 
         {/* Hero CTAs */}
@@ -66,17 +66,17 @@ export function Hero() {
           <div className="space-y-1">
             <div className="flex items-center justify-center gap-1.5 text-vantaire-champagne">
               <SunMedium className="w-4 h-4" />
-              <span className="text-xs uppercase tracking-luxury font-medium text-vantaire-warmWhite">UV400</span>
+              <span className="text-xs uppercase tracking-luxury font-medium text-vantaire-warmWhite">Sun Tint</span>
             </div>
-            <p className="text-[10px] text-vantaire-muted">Max UVA/UVB Filter</p>
+            <p className="text-[10px] text-vantaire-muted">Glare Defense Look</p>
           </div>
 
           <div className="space-y-1 border-x border-vantaire-border/40">
             <div className="flex items-center justify-center gap-1.5 text-vantaire-champagne">
               <ShieldCheck className="w-4 h-4" />
-              <span className="text-xs uppercase tracking-luxury font-medium text-vantaire-warmWhite">Titanium</span>
+              <span className="text-xs uppercase tracking-luxury font-medium text-vantaire-warmWhite">Design</span>
             </div>
-            <p className="text-[10px] text-vantaire-muted">Japanese Alloy Chassis</p>
+            <p className="text-[10px] text-vantaire-muted">Curated Profiles</p>
           </div>
 
           <div className="space-y-1">
@@ -84,7 +84,7 @@ export function Hero() {
               <Compass className="w-4 h-4" />
               <span className="text-xs uppercase tracking-luxury font-medium text-vantaire-warmWhite">Nationwide</span>
             </div>
-            <p className="text-[10px] text-vantaire-muted">Fast BD Delivery</p>
+            <p className="text-[10px] text-vantaire-muted">Bangladesh Courier</p>
           </div>
         </div>
       </div>

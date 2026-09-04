@@ -4,25 +4,22 @@ import { useState, useMemo } from "react";
 import { getAllProducts } from "@/lib/products";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { FrameShape, LensType } from "@/types/catalog";
-import { Filter, SlidersHorizontal, Check } from "lucide-react";
+import { Filter, SlidersHorizontal } from "lucide-react";
 
 export default function ShopPage() {
   const allProducts = getAllProducts();
   const [selectedShape, setSelectedShape] = useState<string>("All");
   const [selectedLens, setSelectedLens] = useState<string>("All");
-  const [onlyPolarized, setOnlyPolarized] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>("featured");
 
   const shapes: string[] = ["All", "Aviator", "Square", "Round", "Cat-Eye", "Geometric", "Sport", "Oversized"];
-  const lenses: string[] = ["All", "Polarized", "Gradient", "Solid UV400", "Mirrored"];
+  const lenses: string[] = ["All", "Polarized-Style Tint", "Gradient Tint", "Dark Sun Tint", "Mirrored Finish"];
 
   const filteredProducts = useMemo(() => {
     return allProducts
       .filter((p) => {
         if (selectedShape !== "All" && p.frameShape !== selectedShape) return false;
         if (selectedLens !== "All" && p.lensType !== selectedLens) return false;
-        if (onlyPolarized && !p.polarized) return false;
         return true;
       })
       .sort((a, b) => {
@@ -31,7 +28,7 @@ export default function ShopPage() {
         if (sortBy === "name") return a.name.localeCompare(b.name);
         return 0; // default featured order
       });
-  }, [allProducts, selectedShape, selectedLens, onlyPolarized, sortBy]);
+  }, [allProducts, selectedShape, selectedLens, sortBy]);
 
   return (
     <div className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -83,11 +80,11 @@ export default function ShopPage() {
           </div>
         </div>
 
-        {/* Secondary Lens & Polarized Toggles */}
+        {/* Secondary Lens Presentation Toggles */}
         <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-vantaire-border/40 text-xs">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[10px] uppercase tracking-luxury text-vantaire-muted mr-1">
-              Optics:
+              Lens Look:
             </span>
             {lenses.map((lens) => (
               <button
@@ -96,7 +93,7 @@ export default function ShopPage() {
                 onClick={() => setSelectedLens(lens)}
                 className={`px-2.5 py-1 text-[11px] transition-colors ${
                   selectedLens === lens
-                    ? "text-vantaire-champagne underline underline-offset-4"
+                    ? "text-vantaire-champagne underline underline-offset-4 font-semibold"
                     : "text-vantaire-muted hover:text-vantaire-sand"
                 }`}
               >
@@ -104,37 +101,18 @@ export default function ShopPage() {
               </button>
             ))}
           </div>
-
-          {/* Polarized quick checkbox */}
-          <button
-            type="button"
-            onClick={() => setOnlyPolarized(!onlyPolarized)}
-            className={`flex items-center gap-2 px-3 py-1 text-xs border transition-colors ${
-              onlyPolarized
-                ? "border-emerald-500 bg-emerald-950/40 text-emerald-300"
-                : "border-vantaire-border text-vantaire-muted hover:text-vantaire-sand"
-            }`}
-          >
-            <span className={`w-3.5 h-3.5 border flex items-center justify-center ${
-              onlyPolarized ? "border-emerald-400 bg-emerald-500" : "border-vantaire-border"
-            }`}>
-              {onlyPolarized && <Check className="w-3 h-3 text-black stroke-[3]" />}
-            </span>
-            <span>Polarized Only</span>
-          </button>
         </div>
       </div>
 
       {/* Results Count */}
       <div className="mb-6 flex items-center justify-between text-xs text-vantaire-muted">
-        <span>Showing {filteredProducts.length} handcrafted models</span>
-        {(selectedShape !== "All" || selectedLens !== "All" || onlyPolarized) && (
+        <span>Showing {filteredProducts.length} models in demo catalog</span>
+        {(selectedShape !== "All" || selectedLens !== "All") && (
           <button
             type="button"
             onClick={() => {
               setSelectedShape("All");
               setSelectedLens("All");
-              setOnlyPolarized(false);
             }}
             className="text-vantaire-champagne hover:underline"
           >

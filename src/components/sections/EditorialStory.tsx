@@ -48,7 +48,7 @@ export function EditorialStory() {
             </p>
 
             <p className="text-xs sm:text-sm text-vantaire-muted font-sans leading-relaxed">
-              Our curated shapes feature hand-finished acetate and durable metal alloys, fitted with UV400 and polarized optics designed to handle bright days while maintaining clear, comfortable vision.
+              Our curated shapes feature structured acetate and metal-look contours, fitted with tinted sun optics designed to handle bright days while maintaining clear, comfortable vision.
             </p>
 
             {/* Core Pillars */}
@@ -56,13 +56,13 @@ export function EditorialStory() {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-4 h-4 text-vantaire-champagne mt-0.5 flex-shrink-0" />
                 <span className="text-xs text-vantaire-sand font-medium">
-                  <strong>Selected Materials:</strong> Cured acetate frames and lightweight metal chassis with engineered barrel hinges.
+                  <strong>Selected Profiles:</strong> Distinctive frame silhouettes featuring rich tortoiseshell patterns and brushed metal tones.
                 </span>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-4 h-4 text-vantaire-champagne mt-0.5 flex-shrink-0" />
                 <span className="text-xs text-vantaire-sand font-medium">
-                  <strong>Optical Sun Defense:</strong> High-filtration UV400 and polarized options tailored to minimize glare.
+                  <strong>Optical Sun Comfort:</strong> Balanced sun-tinted lenses tailored to soften glare and preserve visual ease.
                 </span>
               </div>
               <div className="flex items-start gap-3">

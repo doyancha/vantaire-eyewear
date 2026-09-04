@@ -2,7 +2,7 @@ import { Product } from "@/types/catalog";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { buildProductWhatsAppUrl } from "@/lib/whatsapp";
 import { siteConfig } from "@/lib/config";
-import { ShieldCheck, Truck, Sparkles, RefreshCw } from "lucide-react";
+import { Truck, Sparkles, RefreshCw, Info } from "lucide-react";
 
 interface ProductInfoProps {
   product: Product;
@@ -23,11 +23,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <span className="text-[10px] uppercase tracking-luxury text-vantaire-muted">
           {product.frameShape} • {product.gender}
         </span>
-        {product.polarized && (
-          <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-500/30">
-            Polarized Optics
-          </span>
-        )}
+        <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider font-semibold bg-vantaire-charcoal text-vantaire-sand border border-vantaire-border">
+          {product.styleCategory}
+        </span>
       </div>
 
       {/* Product Title */}
@@ -84,19 +82,19 @@ export function ProductInfo({ product }: ProductInfoProps) {
       {/* Key Architectural Specifications */}
       <div className="pt-2 space-y-3">
         <h3 className="text-xs uppercase tracking-luxury font-semibold text-vantaire-warmWhite">
-          Frame Architecture
+          Frame Profile & Attributes
         </h3>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs border-y border-vantaire-border/60 py-4">
           <div>
-            <dt className="text-vantaire-muted uppercase text-[10px] tracking-wider">Frame Material</dt>
-            <dd className="text-vantaire-sand font-medium mt-0.5">{product.frameMaterial}</dd>
+            <dt className="text-vantaire-muted uppercase text-[10px] tracking-wider">Frame Aesthetic</dt>
+            <dd className="text-vantaire-sand font-medium mt-0.5">{product.frameLook}</dd>
           </div>
           <div>
             <dt className="text-vantaire-muted uppercase text-[10px] tracking-wider">Frame Color</dt>
             <dd className="text-vantaire-sand font-medium mt-0.5">{product.frameColor}</dd>
           </div>
           <div>
-            <dt className="text-vantaire-muted uppercase text-[10px] tracking-wider">Lens Type</dt>
+            <dt className="text-vantaire-muted uppercase text-[10px] tracking-wider">Lens Presentation</dt>
             <dd className="text-vantaire-sand font-medium mt-0.5">{product.lensType}</dd>
           </div>
           <div>
@@ -104,16 +102,20 @@ export function ProductInfo({ product }: ProductInfoProps) {
             <dd className="text-vantaire-sand font-medium mt-0.5">{product.lensColor}</dd>
           </div>
           <div>
-            <dt className="text-vantaire-muted uppercase text-[10px] tracking-wider">UV Protection</dt>
-            <dd className="text-vantaire-sand font-medium mt-0.5">{product.uvProtection}</dd>
+            <dt className="text-vantaire-muted uppercase text-[10px] tracking-wider">Style Category</dt>
+            <dd className="text-vantaire-sand font-medium mt-0.5">{product.styleCategory}</dd>
           </div>
           <div>
-            <dt className="text-vantaire-muted uppercase text-[10px] tracking-wider">Dimensions (Lens-Bridge-Temple)</dt>
-            <dd className="text-vantaire-sand font-medium mt-0.5">
-              {product.dimensions.lensWidth}mm – {product.dimensions.bridgeWidth}mm – {product.dimensions.templeLength}mm
-            </dd>
+            <dt className="text-vantaire-muted uppercase text-[10px] tracking-wider">Intended Fit</dt>
+            <dd className="text-vantaire-sand font-medium mt-0.5">{product.fit} Profile</dd>
           </div>
         </dl>
+      </div>
+
+      {/* Restrained Demo Disclosure */}
+      <div className="p-3.5 bg-vantaire-charcoal/40 border border-vantaire-border/80 text-xs text-vantaire-muted flex items-center gap-2.5">
+        <Info className="w-4 h-4 text-vantaire-champagne flex-shrink-0" />
+        <span>Demo catalog specifications — confirm final product details through WhatsApp before ordering.</span>
       </div>
 
       {/* Packaging & Inclusions */}
@@ -133,12 +135,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
           <span>Inside Dhaka: ৳{siteConfig.delivery.feeInsideDhaka} ({siteConfig.delivery.insideDhakaTime})</span>
         </div>
         <div className="flex items-center gap-2.5 text-vantaire-sand">
-          <ShieldCheck className="w-4 h-4 text-vantaire-champagne flex-shrink-0" />
-          <span>Optical Glare Shield</span>
-        </div>
-        <div className="flex items-center gap-2.5 text-vantaire-sand">
           <Sparkles className="w-4 h-4 text-vantaire-champagne flex-shrink-0" />
-          <span>Acetate & Alloy Finish</span>
+          <span>Carefully Formed Silhouettes</span>
         </div>
         <div className="flex items-center gap-2.5 text-vantaire-sand">
           <RefreshCw className="w-4 h-4 text-vantaire-champagne flex-shrink-0" />

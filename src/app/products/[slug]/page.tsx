@@ -67,7 +67,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   const related = getRelatedProducts(product.slug, 3);
 
-  // Honest Structured Data (Schema.org Product without fabricated reviews or guarantees)
+  // Honest Structured Data (Schema.org Product without unverified specs, ratings or manufacturing claims)
   const jsonLd = {
     "@context": "https://schema.org/",
     "@type": "Product",
@@ -127,9 +127,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
         <div className="mt-24 pt-16 border-t border-vantaire-border/60">
           <SectionHeading
-            eyebrow="Craft & Engineering"
-            title="Every Detail Defined"
-            subtitle="Explore the specifications and design touches that distinguish this frame."
+            eyebrow="Design Profile"
+            title="Observable Characteristics"
+            subtitle="Explore the styling contours and aesthetic details of this frame model."
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -154,7 +154,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             <SectionHeading
               eyebrow="Complementary Silhouettes"
               title="You May Also Appreciate"
-              subtitle="Frames sharing similar architectural presence and optical grade standards."
+              subtitle="Frames sharing similar aesthetic presence and curated design direction."
             />
             <ProductGrid products={related} priorityCount={1} />
           </div>

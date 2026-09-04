@@ -3,6 +3,7 @@ import { siteConfig } from "./config";
 
 /**
  * Builds a direct, pre-filled WhatsApp ordering link for a specific product.
+ * Sends only verifiable merchandising attributes and requests final specs confirmation.
  */
 export function buildProductWhatsAppUrl(
   product: Product,
@@ -17,11 +18,12 @@ export function buildProductWhatsAppUrl(
     ``,
     `• Product: ${product.name}`,
     `• Price: ${product.currencySymbol}${product.price.toLocaleString()}`,
-    `• Frame: ${product.frameColor} (${product.frameMaterial})`,
-    `• Lens: ${product.lensColor} (${product.lensType})`,
+    `• Style: ${product.frameShape}`,
+    `• Frame: ${product.frameColor}`,
+    `• Lens: ${product.lensColor}`,
     `• Product URL: ${urlToShare}`,
     ``,
-    `Please confirm availability, delivery and ordering details.`,
+    `Please confirm current availability, final specifications, delivery and ordering details.`,
     ``,
     `Thank you.`
   ].join("\n");

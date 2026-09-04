@@ -13,15 +13,15 @@ export function Footer() {
           <div className="flex flex-col md:flex-row items-center gap-3">
             <ShieldCheck className="w-6 h-6 text-vantaire-champagne flex-shrink-0" />
             <div>
-              <p className="text-xs uppercase tracking-luxury text-vantaire-warmWhite font-semibold">UV400 Focus</p>
-              <p className="text-[11px] text-vantaire-muted mt-0.5">Engineered for solar glare reduction & UV comfort</p>
+              <p className="text-xs uppercase tracking-luxury text-vantaire-warmWhite font-semibold">Sun Tint Optics</p>
+              <p className="text-[11px] text-vantaire-muted mt-0.5">Curated solar glare reduction & visual comfort</p>
             </div>
           </div>
           <div className="flex flex-col md:flex-row items-center gap-3">
             <Sparkles className="w-6 h-6 text-vantaire-champagne flex-shrink-0" />
             <div>
-              <p className="text-xs uppercase tracking-luxury text-vantaire-warmWhite font-semibold">Acetate & Alloys</p>
-              <p className="text-[11px] text-vantaire-muted mt-0.5">Selected frame materials with clean modern lines</p>
+              <p className="text-xs uppercase tracking-luxury text-vantaire-warmWhite font-semibold">Curated Silhouettes</p>
+              <p className="text-[11px] text-vantaire-muted mt-0.5">Distinctive frame shapes with clean modern lines</p>
             </div>
           </div>
           <div className="flex flex-col md:flex-row items-center gap-3">

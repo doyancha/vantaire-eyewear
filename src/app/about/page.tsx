@@ -1,14 +1,13 @@
 import { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { buildGeneralWhatsAppUrl } from "@/lib/whatsapp";
-import { Sparkles, Eye, Shield, Award, CheckCircle } from "lucide-react";
+import { Sparkles, Eye, Shield, CheckCircle } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About the Atelier & Philosophy",
-  description: "Learn about VANTAIRE EYEWEAR — luxury eyewear crafted with aerospace titanium and Mazzucchelli acetate, engineered for confident presence.",
+  description: "Learn about VANTAIRE EYEWEAR — luxury-inspired eyewear silhouettes engineered for confident presence.",
 };
 
 export default function AboutPage() {
@@ -18,7 +17,7 @@ export default function AboutPage() {
         <SectionHeading
           eyebrow="The Atelier"
           title="Presence in Every Angle."
-          subtitle="VANTAIRE is an independent eyewear label dedicated to precision geometry, optical purity, and timeless modern confidence."
+          subtitle="VANTAIRE is an independent eyewear concept dedicated to precision geometry, clean lines, and timeless modern confidence."
         />
 
         {/* Hero Visual */}
@@ -38,54 +37,54 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-24">
           <div className="space-y-6 text-sm text-vantaire-sand/90 font-sans leading-relaxed">
             <h3 className="font-serif text-3xl text-vantaire-warmWhite font-normal">
-              Why We Refuse Generic Standards
+              A Direct Approach to Eyewear
             </h3>
             <p>
-              Most commercial sunglasses are mass-stamped from cheap injection plastic with lenses that darken visible light without adequately filtering ultraviolet radiation or eliminating reflective surface glare.
+              Eyewear should be an authentic expression of personal presence, facial geometry, and everyday sun comfort — without cumbersome shopping friction or inflated middleman overheads.
             </p>
             <p>
-              VANTAIRE was conceived to invert this paradigm. We source hand-cured block acetate from historic workshops in Italy and combine it with cold-milled aerospace titanium chassis from Japan. The result is eyewear that feels substantial yet featherlight on your face, keeping you comfortable through tropical heat and long drives.
+              VANTAIRE was conceived around curated silhouettes: bold square profiles, classic double-bridge aviators, minimalist round wires, and sharp sculpted cat-eyes. Each model balances strong architectural lines with everyday wearability.
             </p>
             <p>
-              By bypassing traditional brick-and-mortar optical middle layers and instead operating through a dedicated WhatsApp concierge, we deliver bespoke, collector-level quality straight to clients across Dhaka and nationwide Bangladesh.
+              By operating through a direct WhatsApp concierge, we connect clients across Dhaka and nationwide Bangladesh directly with styling advice, frame recommendations, and transparent order tracking.
             </p>
           </div>
 
           <div className="bg-vantaire-charcoal/50 border border-vantaire-border/80 p-8 space-y-6">
             <h4 className="font-serif text-xl text-vantaire-warmWhite">
-              Our 4 Pillars of Integrity
+              Our Guiding Principles
             </h4>
 
             <div className="space-y-4">
               <div className="flex gap-3.5">
                 <Shield className="w-5 h-5 text-vantaire-champagne flex-shrink-0 mt-0.5" />
                 <div>
-                  <h5 className="text-xs uppercase tracking-luxury text-vantaire-warmWhite font-semibold">100% UV400 Optic Standards</h5>
-                  <p className="text-xs text-vantaire-muted mt-1 leading-relaxed">Guaranteed full spectrum blockage of UVA and UVB wavelengths up to 400 nanometers.</p>
+                  <h5 className="text-xs uppercase tracking-luxury text-vantaire-warmWhite font-semibold">Sun Comfort & Clarity</h5>
+                  <p className="text-xs text-vantaire-muted mt-1 leading-relaxed">Carefully tinted lenses designed to shield your eyes from harsh outdoor brightness.</p>
                 </div>
               </div>
 
               <div className="flex gap-3.5">
                 <Eye className="w-5 h-5 text-vantaire-champagne flex-shrink-0 mt-0.5" />
                 <div>
-                  <h5 className="text-xs uppercase tracking-luxury text-vantaire-warmWhite font-semibold">Tri-Acetate Japanese Polarized Lenses</h5>
-                  <p className="text-xs text-vantaire-muted mt-1 leading-relaxed">Precision glare reduction designed to sharpen asphalt lines, coastal horizons, and tropical water reflections.</p>
+                  <h5 className="text-xs uppercase tracking-luxury text-vantaire-warmWhite font-semibold">Defined Silhouettes</h5>
+                  <p className="text-xs text-vantaire-muted mt-1 leading-relaxed">Curated frame geometries styled to accentuate diverse facial structures.</p>
                 </div>
               </div>
 
               <div className="flex gap-3.5">
                 <Sparkles className="w-5 h-5 text-vantaire-champagne flex-shrink-0 mt-0.5" />
                 <div>
-                  <h5 className="text-xs uppercase tracking-luxury text-vantaire-warmWhite font-semibold">Hand-Polished Mazzucchelli Acetate</h5>
-                  <p className="text-xs text-vantaire-muted mt-1 leading-relaxed">Cured organically to ensure deep, luminous depth of color and exceptional structural resilience.</p>
+                  <h5 className="text-xs uppercase tracking-luxury text-vantaire-warmWhite font-semibold">Considered Finishes</h5>
+                  <p className="text-xs text-vantaire-muted mt-1 leading-relaxed">Lustrous acetate-look patterns and brushed metallic tones for elevated aesthetic appeal.</p>
                 </div>
               </div>
 
               <div className="flex gap-3.5">
                 <CheckCircle className="w-5 h-5 text-vantaire-champagne flex-shrink-0 mt-0.5" />
                 <div>
-                  <h5 className="text-xs uppercase tracking-luxury text-vantaire-warmWhite font-semibold">Frictionless Human Ordering</h5>
-                  <p className="text-xs text-vantaire-muted mt-1 leading-relaxed">Direct WhatsApp ordering with verified frame checks and fast nationwide Cash on Delivery.</p>
+                  <h5 className="text-xs uppercase tracking-luxury text-vantaire-warmWhite font-semibold">Direct Concierge Service</h5>
+                  <p className="text-xs text-vantaire-muted mt-1 leading-relaxed">Personalized WhatsApp ordering with fast Cash on Delivery across Bangladesh.</p>
                 </div>
               </div>
             </div>
@@ -101,7 +100,7 @@ export default function AboutPage() {
             Need Guidance on Face Shape & Proportions?
           </h3>
           <p className="text-xs sm:text-sm text-vantaire-sand/80 max-w-xl mx-auto leading-relaxed">
-            Send a photo or your face measurements to our WhatsApp concierge. Our styling specialists will recommend the ideal frame widths and silhouettes for you.
+            Message our WhatsApp concierge for advice on frame styles, sizing, or colors that best match your look.
           </p>
           <div>
             <WhatsAppButton

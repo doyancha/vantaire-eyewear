@@ -21,19 +21,18 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
   title: {
-    default: `${siteConfig.brandName} | Luxury Eyewear • Shade Your Presence`,
+    default: `${siteConfig.brandName} | Sunglasses Collection • Shade Your Presence`,
     template: `%s | ${siteConfig.brandName}`,
   },
-  description: `${siteConfig.brandName} crafts architectural luxury sunglasses with 100% UV400 and polarized optics. Order directly through WhatsApp with nationwide delivery across Bangladesh.`,
+  description: `${siteConfig.brandName} presents architectural sunglasses silhouettes with sun-tinted optics. Order directly through WhatsApp with nationwide delivery across Bangladesh.`,
   keywords: [
     "sunglasses Bangladesh",
-    "luxury eyewear Dhaka",
-    "polarized sunglasses",
-    "UV400 sunglasses",
+    "eyewear Dhaka",
+    "sun protection sunglasses",
     "WhatsApp order sunglasses",
-    "premium eyewear brand",
+    "eyewear collection",
     "VANTAIRE EYEWEAR",
-    "designer shades"
+    "shades Dhaka"
   ],
   authors: [{ name: siteConfig.brandName }],
   creator: siteConfig.brandName,
@@ -48,21 +47,21 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteConfig.siteUrl,
     title: `${siteConfig.brandName} | Shade Your Presence`,
-    description: "Architectural luxury sunglasses with precision optics. Direct WhatsApp ordering & nationwide delivery across Bangladesh.",
+    description: "Architectural sunglasses silhouettes with sun-tinted optics. Direct WhatsApp ordering & nationwide delivery across Bangladesh.",
     siteName: siteConfig.brandName,
     images: [
       {
         url: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=1200&auto=format&fit=crop",
         width: 1200,
         height: 630,
-        alt: `${siteConfig.brandName} Luxury Sunglasses`,
+        alt: `${siteConfig.brandName} Sunglasses Collection`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${siteConfig.brandName} | Shade Your Presence`,
-    description: "Architectural luxury eyewear engineered with precision optics. WhatsApp ordering across Bangladesh.",
+    description: "Architectural sunglasses silhouettes. WhatsApp ordering across Bangladesh.",
     images: ["https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=1200&auto=format&fit=crop"],
   },
   robots: {

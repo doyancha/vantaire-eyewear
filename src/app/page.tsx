@@ -21,7 +21,7 @@ export default function HomePage() {
     },
     {
       title: "Coastal & Travel",
-      desc: "Glare-deflecting polarized lenses designed for open water and high sun.",
+      desc: "Sun-tinted lenses designed for open water and bright outdoor daylight.",
       image: "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?q=80&w=800&auto=format&fit=crop",
       link: "/collections/polarized"
     },
@@ -49,7 +49,7 @@ export default function HomePage() {
         <SectionHeading
           eyebrow="Curated For 2026"
           title="The Signature Edit"
-          subtitle="Precision-formed silhouettes embodying architectural luxury and optical clarity."
+          subtitle="Carefully formed silhouettes embodying architectural luxury and everyday sun styling."
         />
         <ProductGrid products={featured.slice(0, 6)} priorityCount={3} />
         <div className="mt-12 text-center">
@@ -136,9 +136,9 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-none bg-vantaire-black border border-vantaire-champagne/40 flex items-center justify-center text-vantaire-champagne">
               <Shield className="w-5 h-5" />
             </div>
-            <h3 className="font-serif text-xl text-vantaire-warmWhite">UV400 Optics Focus</h3>
+            <h3 className="font-serif text-xl text-vantaire-warmWhite">Sun Tint Optics</h3>
             <p className="text-xs text-vantaire-muted font-sans leading-relaxed">
-              Designed with full UV400 solar filtration to reduce radiation fatigue and preserve visual comfort under bright sunlight.
+              Designed with balanced solar filtration to reduce radiation fatigue and preserve visual comfort under bright sunlight.
             </p>
           </div>
 
@@ -146,9 +146,9 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-none bg-vantaire-black border border-vantaire-champagne/40 flex items-center justify-center text-vantaire-champagne">
               <Sparkles className="w-5 h-5" />
             </div>
-            <h3 className="font-serif text-xl text-vantaire-warmWhite">Tactile Craftsmanship</h3>
+            <h3 className="font-serif text-xl text-vantaire-warmWhite">Curated Profiles</h3>
             <p className="text-xs text-vantaire-muted font-sans leading-relaxed">
-              Structured block acetate and durable metal alloys engineered for structural stability, rich color depth, and reliable daily wear.
+              Structured frame contours and durable finishes engineered for clean lines, rich color depth, and reliable daily wear.
             </p>
           </div>
 
