@@ -43,4 +43,18 @@ next-env.d.ts
 # agents
 .agents/
 
-.vercel
+# raw candidate asset caches and scratch scraper scripts
+/public/images/candidates/
+/public/images/eyesome/
+/public/images/pixabay_cands/
+/public/images/templatesjungle/
+/scripts/*.json
+/scripts/download-*.js
+/scripts/scrape-*.js
+/scripts/collect-*.js
+/scripts/filter-*.js
+/scripts/fetch-*.js
+/scripts/ddg-*.js
+/scripts/test-*.js
+/scripts/multi-scrape-*.js
+/scripts/search-ddg-*.js

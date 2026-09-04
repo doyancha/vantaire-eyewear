@@ -9,8 +9,9 @@ import Link from "next/link";
 import { ArrowRight, Sparkles, Shield, MessageSquare } from "lucide-react";
 
 export default function HomePage() {
-  const featured = getFeaturedProducts();
-  const bestSellers = getBestSellers();
+  const featured = getFeaturedProducts().slice(0, 6);
+  const featuredSlugs = new Set(featured.map((p) => p.slug));
+  const bestSellers = getBestSellers().filter((p) => !featuredSlugs.has(p.slug)).slice(0, 6);
 
   const occasions = [
     {
@@ -51,7 +52,7 @@ export default function HomePage() {
           title="The Signature Edit"
           subtitle="Carefully formed silhouettes embodying architectural luxury and everyday sun styling."
         />
-        <ProductGrid products={featured.slice(0, 6)} priorityCount={3} />
+        <ProductGrid products={featured} priorityCount={3} />
         <div className="mt-12 text-center">
           <Link
             href="/shop"
@@ -85,7 +86,7 @@ export default function HomePage() {
           title="The Vanguard Series"
           subtitle="Popular frame silhouettes designed for presence and everyday versatility."
         />
-        <ProductGrid products={bestSellers.slice(0, 6)} priorityCount={2} />
+        <ProductGrid products={bestSellers} priorityCount={2} />
       </section>
 
       {/* 6. OCCASIONS & LIVING */}

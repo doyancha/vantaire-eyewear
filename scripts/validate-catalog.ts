@@ -12,7 +12,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 console.log("==================================================");
-console.log("VANTAIRE EYEWEAR v1.1 DETERMINISTIC CATALOG VALIDATOR");
+console.log("VANTAIRE EYEWEAR v1.2 DETERMINISTIC CATALOG VALIDATOR");
 console.log("==================================================");
 
 let failureCount = 0;
@@ -26,8 +26,8 @@ function assert(condition: boolean, message: string) {
   }
 }
 
-// 1. Total product count >= 20
-assert(PRODUCTS.length >= 20, `Total products count must be >= 20 (Found: ${PRODUCTS.length})`);
+// 1. Total product count >= 40
+assert(PRODUCTS.length >= 40, `Total products count must be >= 40 (Found: ${PRODUCTS.length})`);
 
 // 2. Unique product IDs & Slugs
 const idSet = new Set<string>();
@@ -93,7 +93,7 @@ for (const col of COLLECTIONS_META) {
   const diskPath = path.join(process.cwd(), "public", col.coverImage.replace(/^\//, ""));
   assert(fs.existsSync(diskPath), `Collection cover exists on disk: ${col.coverImage} for ${col.slug}`);
   const items = getProductsByCollection(col.slug);
-  assert(items.length >= 2, `Collection ${col.slug} has sufficient items (${items.length})`);
+  assert(items.length >= 4, `Collection ${col.slug} has sufficient items (${items.length})`);
 }
 
 // 5. Query Utilities: Featured, Best Sellers, New Arrivals
@@ -103,7 +103,7 @@ const newArrivals = getNewArrivals();
 
 assert(featured.length >= 6, `Featured products count >= 6 (Found: ${featured.length})`);
 assert(bestSellers.length >= 6, `Best sellers count >= 6 (Found: ${bestSellers.length})`);
-assert(newArrivals.length >= 4, `New arrivals count >= 4 (Found: ${newArrivals.length})`);
+assert(newArrivals.length >= 6, `New arrivals count >= 6 (Found: ${newArrivals.length})`);
 
 // 6. Related Products Logic
 for (const p of PRODUCTS) {

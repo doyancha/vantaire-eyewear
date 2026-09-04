@@ -44,11 +44,12 @@ export function getRelatedProducts(currentSlug: string, limit: number = 4): Prod
     const sharedCollections = item.collection.filter((c) => current.collection.includes(c));
     score += sharedCollections.length * 2;
     if (item.gender === current.gender || item.gender === "Unisex") score += 1;
+    if (Math.abs(item.price - current.price) <= 400) score += 1;
     if (item.bestSeller || item.featured) score += 1;
     return { item, score };
   });
 
-  scored.sort((a, b) => b.score - a.score);
+  scored.sort((a, b) => b.score - a.score || a.item.id.localeCompare(b.item.id));
 
   // Return the top scored related products
   return scored.slice(0, limit).map((s) => s.item);
