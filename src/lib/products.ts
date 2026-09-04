@@ -33,14 +33,25 @@ export function getProductsByCollection(collectionSlug: string): Product[] {
 export function getRelatedProducts(currentSlug: string, limit: number = 4): Product[] {
   const current = getProductBySlug(currentSlug);
   if (!current) return PRODUCTS.slice(0, limit);
-  
-  return PRODUCTS
-    .filter((p) => p.slug !== currentSlug)
-    .filter((p) => 
-      p.frameShape === current.frameShape || 
-      p.collection.some(c => current.collection.includes(c))
-    )
-    .slice(0, limit);
+
+  // Score candidate items based on frameShape, styleCategory, collection overlap, and gender
+  const candidates = PRODUCTS.filter((p) => p.slug !== currentSlug);
+
+  const scored = candidates.map((item) => {
+    let score = 0;
+    if (item.frameShape === current.frameShape) score += 4;
+    if (item.styleCategory === current.styleCategory) score += 3;
+    const sharedCollections = item.collection.filter((c) => current.collection.includes(c));
+    score += sharedCollections.length * 2;
+    if (item.gender === current.gender || item.gender === "Unisex") score += 1;
+    if (item.bestSeller || item.featured) score += 1;
+    return { item, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  // Return the top scored related products
+  return scored.slice(0, limit).map((s) => s.item);
 }
 
 export function getCollectionsMeta() {

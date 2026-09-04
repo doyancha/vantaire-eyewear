@@ -31,12 +31,18 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         {/* Clickable Image to Product Detail */}
         <Link href={`/products/${product.slug}`} className="block w-full h-full relative" tabIndex={-1} aria-label={`View details of ${product.name}`}>
           <Image
-            src={product.images[0]}
+            src={product.images[0] || "/images/fallback-sunglasses.jpg"}
             alt={product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             priority={priority}
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            onError={(e) => {
+              const target = e.currentTarget as HTMLImageElement;
+              if (target.src !== "/images/fallback-sunglasses.jpg") {
+                target.src = "/images/fallback-sunglasses.jpg";
+              }
+            }}
           />
         </Link>
       </div>

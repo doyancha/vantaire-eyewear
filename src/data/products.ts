@@ -1,7 +1,7 @@
 import { Product, CollectionMeta } from "@/types/catalog";
 
 /**
- * VANTAIRE EYEWEAR - Demonstration Catalog
+ * VANTAIRE EYEWEAR - Demonstration Catalog v1.1
  * 
  * SPECIFICATION INTEGRITY NOTICE:
  * Fictional demonstration products paired with real eyewear photography.
@@ -10,6 +10,9 @@ import { Product, CollectionMeta } from "@/types/catalog";
  */
 
 export const PRODUCTS: Product[] = [
+  // ==========================================
+  // EXISTING 12 PRODUCTS (Preserving All Slugs)
+  // ==========================================
   {
     id: "vnt-01",
     slug: "noir-sovereign-aviator",
@@ -24,9 +27,7 @@ export const PRODUCTS: Product[] = [
     currencySymbol: "৳",
     description: "An architectural reimagining of the iconic flight silhouette. Features a dark metal-look frame in matte obsidian with dark charcoal sun lenses designed for confident presence and glare reduction.",
     shortDescription: "Architectural aviator silhouette with matte obsidian styling.",
-    images: [
-      "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=1000&auto=format&fit=crop"
-    ],
+    images: ["/images/products/noir-sovereign-aviator.jpg"],
     frameShape: "Aviator",
     frameLook: "Dark Metal-Look Alloy",
     frameColor: "Matte Obsidian Black",
@@ -62,9 +63,7 @@ export const PRODUCTS: Product[] = [
     currencySymbol: "৳",
     description: "Bold geometric authority meets European resort sophistication. Features a structured tortoise-pattern frame with beveled outer contours and warm amber gradient-look lenses.",
     shortDescription: "Chunky beveled tortoise-pattern frame with warm amber gradient lenses.",
-    images: [
-      "https://images.unsplash.com/photo-1508296695146-257a814070b4?q=80&w=1000&auto=format&fit=crop"
-    ],
+    images: ["/images/products/monaco-sculpted-square.jpg"],
     frameShape: "Square",
     frameLook: "Tortoise Acetate-Look",
     frameColor: "Rich Tortoise Havana",
@@ -99,9 +98,7 @@ export const PRODUCTS: Product[] = [
     currencySymbol: "৳",
     description: "An intellectual, minimalist circular silhouette. Slim wire-look rim in brushed antique gold tone with forest green-tinted lenses for refined vintage-inspired character.",
     shortDescription: "Minimalist circular wire profile with forest green-tinted lenses.",
-    images: [
-      "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?q=80&w=1000&auto=format&fit=crop"
-    ],
+    images: ["/images/products/vesper-pantoscopic-round.jpg"],
     frameShape: "Round",
     frameLook: "Gold-Tone Metal-Look",
     frameColor: "Brushed Antique Gold",
@@ -137,9 +134,7 @@ export const PRODUCTS: Product[] = [
     currencySymbol: "৳",
     description: "A sharp, high-attitude uplift sculpted with dramatic brow lines. Tailored for elevated presence from everyday city wear to weekend occasions.",
     shortDescription: "Sculpted cat-eye in high-gloss jet black with smoke gradient lenses.",
-    images: [
-      "https://images.unsplash.com/photo-1509695503492-413ff566a383?q=80&w=1000&auto=format&fit=crop"
-    ],
+    images: ["/images/products/verona-architectural-cat-eye.jpg"],
     frameShape: "Cat-Eye",
     frameLook: "Jet Black Acetate-Look",
     frameColor: "High Gloss Jet Black",
@@ -174,9 +169,7 @@ export const PRODUCTS: Product[] = [
     currencySymbol: "৳",
     description: "The definitive everyday silhouette built for city life, driving, and tropical sunlight. Balanced proportions designed for versatile wear.",
     shortDescription: "Essential modern wayfarer in matte slate with dark neutral sun lenses.",
-    images: [
-      "https://images.unsplash.com/photo-1577803645773-f96470509666?q=80&w=1000&auto=format&fit=crop"
-    ],
+    images: ["/images/products/atlas-polarized-wayfarer.jpg"],
     frameShape: "Square",
     frameLook: "Matte Slate Finish",
     frameColor: "Matte Slate Gray",
@@ -212,9 +205,7 @@ export const PRODUCTS: Product[] = [
     currencySymbol: "৳",
     description: "An adventurous polygonal silhouette featuring multi-faceted beveled styling with a warm champagne gold-tone finish and bronze gradient lenses.",
     shortDescription: "Multi-faceted octagon frame in brushed champagne gold tone with bronze tint.",
-    images: [
-      "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=1000&auto=format&fit=crop"
-    ],
+    images: ["/images/products/solstice-geometric-octagon.jpg"],
     frameShape: "Geometric",
     frameLook: "Gold-Tone Metal-Look",
     frameColor: "Brushed Champagne Gold Tone",
@@ -249,9 +240,7 @@ export const PRODUCTS: Product[] = [
     currencySymbol: "৳",
     description: "Engineered for speed, motion, and active outdoor sunlight. Curved panoramic frame featuring an ice-blue mirrored shield aesthetic.",
     shortDescription: "Curved aerodynamic sport sunglasses with ice-blue mirrored shield.",
-    images: [
-      "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?q=80&w=1000&auto=format&fit=crop"
-    ],
+    images: ["/images/products/velocity-aerodynamic-sport.jpg"],
     frameShape: "Sport",
     frameLook: "Graphite Sport-Look",
     frameColor: "Stealth Graphite Gray",
@@ -287,9 +276,7 @@ export const PRODUCTS: Product[] = [
     currencySymbol: "৳",
     description: "Modern translucency perfected. Formed from transparent crystal-look frame material with visible internal core wire aesthetic, paired with silver-mirror lenses.",
     shortDescription: "Transparent crystal-look frame with silver mirrored lenses.",
-    images: [
-      "https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=1000&auto=format&fit=crop"
-    ],
+    images: ["/images/products/arden-crystal-clear-square.jpg"],
     frameShape: "Square",
     frameLook: "Translucent Crystal Finish",
     frameColor: "Ice Crystal Clear",
@@ -325,9 +312,7 @@ export const PRODUCTS: Product[] = [
     currencySymbol: "৳",
     description: "Minimalist optical architecture featuring beveled-edge lenses mounted directly to silver-tone metal temples for an unobstructed field of vision.",
     shortDescription: "Weightless-look rimless sunglasses with beveled edge lenses.",
-    images: [
-      "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=1000&auto=format&fit=crop"
-    ],
+    images: ["/images/products/riviera-rimless-titanium.jpg"],
     frameShape: "Aviator",
     frameLook: "Dark Metal-Look Alloy",
     frameColor: "Polished Silver Tone",
@@ -362,9 +347,7 @@ export const PRODUCTS: Product[] = [
     currencySymbol: "৳",
     description: "A soft, 1970s European cinematic expression. Warm amber honey-look frames enclosing sunset sienna gradient lenses for unforgettable golden-hour radiance.",
     shortDescription: "Cinematic honey-look frame with warm sienna sunset gradient lenses.",
-    images: [
-      "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?q=80&w=1000&auto=format&fit=crop"
-    ],
+    images: ["/images/products/sienna-vintage-gradient-round.jpg"],
     frameShape: "Round",
     frameLook: "Tortoise Acetate-Look",
     frameColor: "Warm Honey Amber",
@@ -400,9 +383,7 @@ export const PRODUCTS: Product[] = [
     currencySymbol: "৳",
     description: "Maximum coverage, uncompromising aura. The Obsidian Edge features wide temples and a flat-top browline designed to command any room or boulevard.",
     shortDescription: "Commanding flat-top oversized black frame with dark noir lenses.",
-    images: [
-      "https://images.unsplash.com/photo-1509695503492-413ff566a383?q=80&w=1000&auto=format&fit=crop"
-    ],
+    images: ["/images/products/obsidian-edge-oversized-square.jpg"],
     frameShape: "Oversized",
     frameLook: "Jet Black Acetate-Look",
     frameColor: "Deep Midnight Pitch",
@@ -437,9 +418,7 @@ export const PRODUCTS: Product[] = [
     currencySymbol: "৳",
     description: "A structured pilot frame with a straight top bar. Finished in dark gunmetal tone with dark slate green sun lenses.",
     shortDescription: "Structured pilot silhouette with industrial brow bar and dark slate green lenses.",
-    images: [
-      "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=1000&auto=format&fit=crop"
-    ],
+    images: ["/images/products/corsica-pilot-double-bridge.jpg"],
     frameShape: "Aviator",
     frameLook: "Dark Metal-Look Alloy",
     frameColor: "Brushed Gunmetal Tone",
@@ -460,6 +439,366 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     seoTitle: "Corsica Double-Bridge Pilot Sunglasses | VANTAIRE EYEWEAR",
     seoDescription: "Gunmetal-tone double-bridge pilot sunglasses with green lenses. Direct WhatsApp ordering."
+  },
+
+  // ==========================================
+  // 10 NEW EXPANSION PRODUCTS (Total = 22)
+  // ==========================================
+  {
+    id: "vnt-13",
+    slug: "eclipse-narrow-rectangle",
+    name: "Eclipse Narrow Rectangle",
+    shortName: "Eclipse Rectangle",
+    category: "Sunglasses",
+    collection: ["square"],
+    gender: "Unisex",
+    price: 2950,
+    compareAtPrice: 3500,
+    currency: "BDT",
+    currencySymbol: "৳",
+    description: "Streamlined 90s-inspired low-profile rectangle sunglasses. Sculpted in high-density matte black with smoke-tint optics for sharp urban attitude.",
+    shortDescription: "Low-profile architectural rectangle with sleek horizontal proportions.",
+    images: ["/images/products/eclipse-narrow-rectangle.jpg"],
+    frameShape: "Rectangular",
+    frameLook: "Jet Black Acetate-Look",
+    frameColor: "Matte Pitch Black",
+    lensColor: "Neutral Smoke Tint",
+    lensType: "Dark Sun Tint",
+    styleCategory: "Contemporary",
+    fit: "Narrow",
+    features: [
+      "Ultra-low horizontal profile design",
+      "Beveled edge contouring",
+      "Deep smoke sun optics appearance",
+      "Sculpted ergonomic temple tips"
+    ],
+    badge: "New Arrival",
+    featured: true,
+    bestSeller: false,
+    newArrival: true,
+    inStock: true,
+    seoTitle: "Eclipse Narrow Rectangle Sunglasses | VANTAIRE EYEWEAR",
+    seoDescription: "Slim 90s-inspired rectangular sunglasses in matte black with smoke lenses. Order via WhatsApp."
+  },
+  {
+    id: "vnt-14",
+    slug: "valencia-oversized-gradient",
+    name: "Valencia Oversized Gradient",
+    shortName: "Valencia Oversized",
+    category: "Sunglasses",
+    collection: ["square", "cat-eye"],
+    gender: "Women",
+    price: 3650,
+    compareAtPrice: 4400,
+    currency: "BDT",
+    currencySymbol: "৳",
+    description: "Grand resort luxury with dramatic facial framing. Features a rich tortoiseshell acetate-look silhouette enclosing warm mocha gradient lenses.",
+    shortDescription: "Dramatic oversized silhouette with warm mocha gradient tint.",
+    images: ["/images/products/valencia-oversized-gradient.jpg"],
+    frameShape: "Oversized",
+    frameLook: "Tortoise Acetate-Look",
+    frameColor: "Cognac Amber Tortoise",
+    lensColor: "Mocha Sunset Gradient",
+    lensType: "Gradient Tint",
+    styleCategory: "Contemporary",
+    fit: "Wide",
+    features: [
+      "Generous oversized lens perimeter",
+      "Glossy cognac tortoise coloration",
+      "Smooth vertical gradient tint",
+      "Extended sun shielding coverage"
+    ],
+    badge: "Bestseller",
+    featured: false,
+    bestSeller: true,
+    newArrival: false,
+    inStock: true,
+    seoTitle: "Valencia Oversized Gradient Sunglasses | VANTAIRE EYEWEAR",
+    seoDescription: "Oversized tortoise sunglasses with mocha gradient lenses. Fast delivery across Bangladesh."
+  },
+  {
+    id: "vnt-15",
+    slug: "aurelius-double-bridge",
+    name: "Aurelius Navigator Double-Bridge",
+    shortName: "Aurelius Navigator",
+    category: "Sunglasses",
+    collection: ["aviator", "polarized"],
+    gender: "Men",
+    price: 3550,
+    compareAtPrice: 4300,
+    currency: "BDT",
+    currencySymbol: "৳",
+    description: "A commanding square-aviator hybrid featuring a precision-etched dual bridge and warm brushed brass metallic styling.",
+    shortDescription: "Geometric navigator frame with architectural double brow bridge.",
+    images: ["/images/products/aurelius-double-bridge.jpg"],
+    frameShape: "Aviator",
+    frameLook: "Gold-Tone Metal-Look",
+    frameColor: "Brushed Antique Brass",
+    lensColor: "G-15 Forest Tint",
+    lensType: "Polarized-Style Tint",
+    styleCategory: "Architectural",
+    fit: "Universal",
+    features: [
+      "Geometric squared aviator navigator contour",
+      "Brushed brass metallic frame presentation",
+      "High-contrast G-15 tint presentation",
+      "Structured industrial cross-bar"
+    ],
+    badge: "Signature Edit",
+    featured: false,
+    bestSeller: true,
+    newArrival: false,
+    inStock: true,
+    seoTitle: "Aurelius Double-Bridge Navigator Sunglasses | VANTAIRE EYEWEAR",
+    seoDescription: "Squared double-bridge aviator sunglasses in antique brass finish. Order via WhatsApp."
+  },
+  {
+    id: "vnt-16",
+    slug: "cannes-crystal-square",
+    name: "Cannes Crystal Champagne Square",
+    shortName: "Cannes Crystal",
+    category: "Sunglasses",
+    collection: ["square"],
+    gender: "Unisex",
+    price: 3200,
+    currency: "BDT",
+    currencySymbol: "৳",
+    description: "Translucent champagne resin aesthetic with warm golden reflections. Clean minimalist square geometry designed for effortless daylight elegance.",
+    shortDescription: "Champagne crystal frame with warm golden amber tint lenses.",
+    images: ["/images/products/cannes-crystal-square.jpg"],
+    frameShape: "Square",
+    frameLook: "Translucent Crystal Finish",
+    frameColor: "Translucent Champagne Tone",
+    lensColor: "Golden Amber Sun Tint",
+    lensType: "Gradient Tint",
+    styleCategory: "Contemporary",
+    fit: "Medium",
+    features: [
+      "Luminous champagne translucent finish",
+      "Subtle beveled square border styling",
+      "Golden amber tint visual aesthetic",
+      "Lightweight structured wear"
+    ],
+    badge: "New Arrival",
+    featured: false,
+    bestSeller: false,
+    newArrival: true,
+    inStock: true,
+    seoTitle: "Cannes Crystal Champagne Square Sunglasses | VANTAIRE EYEWEAR",
+    seoDescription: "Translucent champagne square sunglasses with amber lenses. Available on VANTAIRE."
+  },
+  {
+    id: "vnt-17",
+    slug: "orion-sport-wrap",
+    name: "Orion Polarized Sport Wrap",
+    shortName: "Orion Sport Wrap",
+    category: "Sunglasses",
+    collection: ["sport", "polarized"],
+    gender: "Unisex",
+    price: 3350,
+    compareAtPrice: 3950,
+    currency: "BDT",
+    currencySymbol: "৳",
+    description: "Engineered wrap geometry designed for driving, high-speed maritime sports, and outdoor activities requiring peripheral glare rejection.",
+    shortDescription: "Dynamic wrap-around sport silhouette with deep obsidian polarized tint.",
+    images: ["/images/products/orion-sport-wrap.jpg"],
+    frameShape: "Sport",
+    frameLook: "Graphite Sport-Look",
+    frameColor: "Matte Carbon Black",
+    lensColor: "Deep Polar Obsidian Tint",
+    lensType: "Polarized-Style Tint",
+    styleCategory: "Sport",
+    fit: "Universal",
+    features: [
+      "Full wrap-around aerodynamic contour",
+      "Anti-glare polarized-style sun presentation",
+      "Textured grip temple lining appearance",
+      "Wind and sunlight peripheral shielding"
+    ],
+    badge: "Bestseller",
+    featured: false,
+    bestSeller: true,
+    newArrival: false,
+    inStock: true,
+    seoTitle: "Orion Polarized Sport Wrap Sunglasses | VANTAIRE EYEWEAR",
+    seoDescription: "Matte black sport wrap sunglasses for cycling, driving, and watersports across Bangladesh."
+  },
+  {
+    id: "vnt-18",
+    slug: "savoy-browline-classic",
+    name: "Savoy Architectural Browline",
+    shortName: "Savoy Browline",
+    category: "Sunglasses",
+    collection: ["square", "aviator"],
+    gender: "Men",
+    price: 3400,
+    currency: "BDT",
+    currencySymbol: "৳",
+    description: "A mid-century intellectual classic reimagined with modern sharp lines. Features prominent acetate-look upper rims anchored by polished gold-tone lower eyewires.",
+    shortDescription: "Iconic clubmaster-style browline with polished gold and black combo.",
+    images: ["/images/products/savoy-browline-classic.jpg"],
+    frameShape: "Browline",
+    frameLook: "Polished Gold & Acetate Combo",
+    frameColor: "Black & Polished Gold Tone",
+    lensColor: "Classic Dark Emerald Tint",
+    lensType: "Dark Sun Tint",
+    styleCategory: "Retro",
+    fit: "Medium",
+    features: [
+      "Structured acetate-look brow bar profile",
+      "Polished metallic gold bottom eyewires",
+      "Emerald sun tint appearance",
+      "Vintage-inspired rivet detailing"
+    ],
+    badge: "Signature Edit",
+    featured: true,
+    bestSeller: false,
+    newArrival: false,
+    inStock: true,
+    seoTitle: "Savoy Architectural Browline Sunglasses | VANTAIRE EYEWEAR",
+    seoDescription: "Classic clubmaster browline sunglasses in black and gold tone. Order directly on WhatsApp."
+  },
+  {
+    id: "vnt-19",
+    slug: "luna-sculpted-round",
+    name: "Luna Sculpted Acetate Round",
+    shortName: "Luna Round",
+    category: "Sunglasses",
+    collection: ["round"],
+    gender: "Unisex",
+    price: 3100,
+    compareAtPrice: 3700,
+    currency: "BDT",
+    currencySymbol: "৳",
+    description: "Thick, sculpted round acetate-look rims that balance bold modern styling with bohemian intellectual charm. Finished in polished deep espresso brown.",
+    shortDescription: "Substantial circular acetate-look silhouette in deep espresso.",
+    images: ["/images/products/luna-sculpted-round.jpg"],
+    frameShape: "Round",
+    frameLook: "Jet Black Acetate-Look",
+    frameColor: "Deep Espresso Noir",
+    lensColor: "Charcoal Smoke Tint",
+    lensType: "Dark Sun Tint",
+    styleCategory: "Contemporary",
+    fit: "Universal",
+    features: [
+      "Chunky rounded rim architecture",
+      "High-gloss deep espresso finish",
+      "Dark charcoal sun protection tint",
+      "Keyhole bridge for balanced fit"
+    ],
+    badge: "New Arrival",
+    featured: false,
+    bestSeller: false,
+    newArrival: true,
+    inStock: true,
+    seoTitle: "Luna Sculpted Round Sunglasses | VANTAIRE EYEWEAR",
+    seoDescription: "Bold circular acetate-look sunglasses in espresso black. Direct WhatsApp ordering."
+  },
+  {
+    id: "vnt-20",
+    slug: "montreux-smoke-rectangle",
+    name: "Montreux Smoked Glass Rectangle",
+    shortName: "Montreux Rectangle",
+    category: "Sunglasses",
+    collection: ["square"],
+    gender: "Unisex",
+    price: 3300,
+    currency: "BDT",
+    currencySymbol: "৳",
+    description: "A translucent smoky gray frame formed into a wide, sharp-cornered rectangle. Contemporary Swiss gallery aesthetics tailored for high-contrast sunlight.",
+    shortDescription: "Smoked translucent rectangle frame with deep slate gray optics.",
+    images: ["/images/products/montreux-smoke-rectangle.jpg"],
+    frameShape: "Rectangular",
+    frameLook: "Smoked Crystal Finish",
+    frameColor: "Smoked Slate Crystal",
+    lensColor: "Slate Gray Sun Tint",
+    lensType: "Gradient Tint",
+    styleCategory: "Architectural",
+    fit: "Wide",
+    features: [
+      "Smoked crystal translucent materiality",
+      "Crisp beveled rectangular edges",
+      "Uniform slate gray sun filtration",
+      "Modern minimalist identity"
+    ],
+    badge: "Signature Edit",
+    featured: false,
+    bestSeller: true,
+    newArrival: false,
+    inStock: true,
+    seoTitle: "Montreux Smoked Rectangle Sunglasses | VANTAIRE EYEWEAR",
+    seoDescription: "Smoked gray crystal rectangle sunglasses with slate lenses by VANTAIRE."
+  },
+  {
+    id: "vnt-21",
+    slug: "palermo-amber-cat-eye",
+    name: "Palermo Amber Flame Cat-Eye",
+    shortName: "Palermo Cat-Eye",
+    category: "Sunglasses",
+    collection: ["cat-eye"],
+    gender: "Women",
+    price: 3450,
+    compareAtPrice: 4100,
+    currency: "BDT",
+    currencySymbol: "৳",
+    description: "Flattering, flared Italian seaside cat-eye profile sculpted in luminous amber tortoiseshell. Fitted with warm brown sunset lenses.",
+    shortDescription: "Flared Italian cat-eye silhouette in glowing amber tortoiseshell.",
+    images: ["/images/products/palermo-amber-cat-eye.jpg"],
+    frameShape: "Cat-Eye",
+    frameLook: "Tortoise Acetate-Look",
+    frameColor: "Amber Flame Tortoiseshell",
+    lensColor: "Warm Chestnut Gradient",
+    lensType: "Gradient Tint",
+    styleCategory: "Retro",
+    fit: "Medium",
+    features: [
+      "Swept-wing cat-eye architecture",
+      "Rich multi-tone amber tortoiseshell",
+      "Chestnut gradient sun optics",
+      "Smooth comfort nose bridge"
+    ],
+    badge: "Bestseller",
+    featured: false,
+    bestSeller: true,
+    newArrival: false,
+    inStock: true,
+    seoTitle: "Palermo Amber Cat-Eye Sunglasses | VANTAIRE EYEWEAR",
+    seoDescription: "Luminous amber tortoise cat-eye sunglasses with gradient lenses. Available across Bangladesh."
+  },
+  {
+    id: "vnt-22",
+    slug: "capri-gold-round",
+    name: "Capri Filigree Wire Round",
+    shortName: "Capri Wire Round",
+    category: "Sunglasses",
+    collection: ["round", "polarized"],
+    gender: "Unisex",
+    price: 3200,
+    currency: "BDT",
+    currencySymbol: "৳",
+    description: "Featherlight gold-tone wireframe sunglasses adorned with subtle micro-grooved rim detailing and polarized-style dark bottle-green lenses.",
+    shortDescription: "Subtle gold wire round frame with bottle-green polarized optics.",
+    images: ["/images/products/capri-gold-round.jpg"],
+    frameShape: "Round",
+    frameLook: "Gold-Tone Metal-Look",
+    frameColor: "Polished Yellow Gold Tone",
+    lensColor: "Deep Bottle Green Tint",
+    lensType: "Polarized-Style Tint",
+    styleCategory: "Classic",
+    fit: "Narrow",
+    features: [
+      "Ultra-fine gold-tone wire rim contour",
+      "Subtle perimeter coin-edge rim etching",
+      "Deep bottle green polarized-style lenses",
+      "Soft silicone nose pads"
+    ],
+    badge: "Limited Edition",
+    featured: true,
+    bestSeller: false,
+    newArrival: true,
+    inStock: true,
+    seoTitle: "Capri Wire Round Sunglasses | VANTAIRE EYEWEAR",
+    seoDescription: "Gold wire round sunglasses with dark green polarized-style lenses. Order via WhatsApp."
   }
 ];
 
@@ -469,41 +808,41 @@ export const COLLECTIONS_META: CollectionMeta[] = [
     name: "The Aviator Edit",
     tagline: "Timeless Flight Silhouettes",
     description: "Classic dual-bridge and pilot silhouettes featuring sleek metallic styling and tinted sun optics.",
-    coverImage: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=1000&auto=format&fit=crop"
+    coverImage: "/images/collections/collection-aviator.jpg"
   },
   {
     slug: "square",
     name: "The Sculpted Square",
     tagline: "Geometric Structure & Presence",
     description: "Substantial beveled profiles engineered for modern definition, architectural character, and decisive style.",
-    coverImage: "https://images.unsplash.com/photo-1508296695146-257a814070b4?q=80&w=1000&auto=format&fit=crop"
+    coverImage: "/images/collections/collection-square.jpg"
   },
   {
     slug: "round",
     name: "The Pantoscopic Round",
     tagline: "Intellectual Modernism",
     description: "Clean circular wire rims and warm amber hues celebrating vintage-inspired design and effortless sophistication.",
-    coverImage: "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?q=80&w=1000&auto=format&fit=crop"
+    coverImage: "/images/collections/collection-round.jpg"
   },
   {
     slug: "cat-eye",
     name: "The Verona Cat-Eye",
     tagline: "High-Attitude Contours",
     description: "Sharp, upturned brow silhouettes sculpted in lustrous black and tortoise tones for dramatic elegance.",
-    coverImage: "https://images.unsplash.com/photo-1509695503492-413ff566a383?q=80&w=1000&auto=format&fit=crop"
+    coverImage: "/images/collections/collection-cat-eye.jpg"
   },
   {
     slug: "polarized",
     name: "The Polarized Series",
     tagline: "High-Clarity Sun Protection",
     description: "Glare-reducing sun lens presentations tailored for open roads, coastal travel, and tropical sunlight.",
-    coverImage: "https://images.unsplash.com/photo-1577803645773-f96470509666?q=80&w=1000&auto=format&fit=crop"
+    coverImage: "/images/collections/collection-polarized.jpg"
   },
   {
     slug: "sport",
     name: "Velocity & Motion",
     tagline: "Aerodynamic Performance",
     description: "Wrap-around aerodynamic shield silhouettes designed for dynamic outdoor movement and endurance.",
-    coverImage: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?q=80&w=1000&auto=format&fit=crop"
+    coverImage: "/images/collections/collection-sport.jpg"
   }
 ];

@@ -10,7 +10,7 @@ export function Hero() {
       {/* Background Cinematic Image with Luxury Overlay */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=2000&auto=format&fit=crop"
+          src="/images/hero/hero-sunglasses.jpg"
           alt="VANTAIRE Architectural Eyewear Collection"
           fill
           priority

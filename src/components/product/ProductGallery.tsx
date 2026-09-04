@@ -16,12 +16,18 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
       {/* Large Main Showcase Image */}
       <div className="relative aspect-square sm:aspect-[4/3] md:aspect-square w-full bg-vantaire-charcoal overflow-hidden border border-vantaire-border/80">
         <Image
-          src={images[selectedIndex] || images[0]}
+          src={images[selectedIndex] || images[0] || "/images/fallback-sunglasses.jpg"}
           alt={`${productName} view ${selectedIndex + 1}`}
           fill
           priority
           sizes="(max-width: 768px) 100vw, 50vw"
           className="object-cover object-center transition-all duration-500 ease-in-out"
+          onError={(e) => {
+            const target = e.currentTarget as HTMLImageElement;
+            if (target.src !== "/images/fallback-sunglasses.jpg") {
+              target.src = "/images/fallback-sunglasses.jpg";
+            }
+          }}
         />
       </div>
 

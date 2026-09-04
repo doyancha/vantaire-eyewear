@@ -16,25 +16,25 @@ export default function HomePage() {
     {
       title: "Daily Architectural",
       desc: "Balanced silhouettes for office, cafe appointments, and city strolls.",
-      image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?q=80&w=800&auto=format&fit=crop",
+      image: "/images/editorial/occasion-architectural.jpg",
       link: "/collections/square"
     },
     {
       title: "Coastal & Travel",
       desc: "Sun-tinted lenses designed for open water and bright outdoor daylight.",
-      image: "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?q=80&w=800&auto=format&fit=crop",
+      image: "/images/editorial/occasion-coastal.jpg",
       link: "/collections/polarized"
     },
     {
       title: "Highway & Driving",
       desc: "Carefully calibrated tint gradient designed for clear roadway and horizon vision.",
-      image: "https://images.unsplash.com/photo-1577803645773-f96470509666?q=80&w=800&auto=format&fit=crop",
+      image: "/images/editorial/occasion-highway.jpg",
       link: "/collections/aviator"
     },
     {
       title: "Motion & Active",
       desc: "Wrap-around sports frames engineered for dynamic movement and outdoor endurance.",
-      image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?q=80&w=800&auto=format&fit=crop",
+      image: "/images/editorial/occasion-sport.jpg",
       link: "/collections/sport"
     }
   ];

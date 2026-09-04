@@ -12,7 +12,7 @@ export default function ShopPage() {
   const [selectedLens, setSelectedLens] = useState<string>("All");
   const [sortBy, setSortBy] = useState<string>("featured");
 
-  const shapes: string[] = ["All", "Aviator", "Square", "Round", "Cat-Eye", "Geometric", "Sport", "Oversized"];
+  const shapes: string[] = ["All", "Aviator", "Square", "Round", "Cat-Eye", "Geometric", "Sport", "Rectangular", "Oversized", "Browline"];
   const lenses: string[] = ["All", "Polarized-Style Tint", "Gradient Tint", "Dark Sun Tint", "Mirrored Finish"];
 
   const filteredProducts = useMemo(() => {

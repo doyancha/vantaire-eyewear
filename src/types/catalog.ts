@@ -6,7 +6,8 @@ export type FrameShape =
   | "Geometric"
   | "Sport"
   | "Rectangular"
-  | "Oversized";
+  | "Oversized"
+  | "Browline";
 
 export type LensType = 
   | "Polarized-Style Tint"
@@ -21,7 +22,10 @@ export type FrameLook =
   | "Jet Black Acetate-Look"
   | "Matte Slate Finish"
   | "Translucent Crystal Finish"
-  | "Graphite Sport-Look";
+  | "Graphite Sport-Look"
+  | "Amber Acetate-Look"
+  | "Smoked Crystal Finish"
+  | "Polished Gold & Acetate Combo";
 
 export type CollectionSlug = 
   | "all"

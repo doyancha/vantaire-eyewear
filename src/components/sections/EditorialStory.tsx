@@ -11,8 +11,8 @@ export function EditorialStory() {
           <div className="relative">
             <div className="relative aspect-[4/5] w-full max-w-lg mx-auto overflow-hidden bg-vantaire-charcoal border border-vantaire-border/80">
               <Image
-                src="https://images.unsplash.com/photo-1509695503492-413ff566a383?q=80&w=1200&auto=format&fit=crop"
-                alt="VANTAIRE Eyewear Concept"
+                src="/images/editorial/editorial-story.jpg"
+                alt="VANTAIRE Architectural Eyewear Design Concept"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
