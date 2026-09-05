@@ -12,7 +12,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 console.log("==================================================");
-console.log("VANTAIRE EYEWEAR v1.2 DETERMINISTIC CATALOG VALIDATOR");
+console.log("VANTAIRE EYEWEAR v1.2.1 DETERMINISTIC CATALOG VALIDATOR");
 console.log("==================================================");
 
 let failureCount = 0;
@@ -26,10 +26,24 @@ function assert(condition: boolean, message: string) {
   }
 }
 
-// 1. Total product count >= 40
+// 1. Total product count >= 40 and expected 42
 assert(PRODUCTS.length >= 40, `Total products count must be >= 40 (Found: ${PRODUCTS.length})`);
+assert(PRODUCTS.length === 42, `Catalog count expected to be exactly 42 (Found: ${PRODUCTS.length})`);
 
-// 2. Unique product IDs & Slugs
+// 2. Currency integrity across all products
+let usdCount = 0;
+let bdtCount = 0;
+for (const p of PRODUCTS) {
+  assert(p.currency === "BDT", `Product ${p.slug} currency must be BDT (Found: ${p.currency})`);
+  assert(p.currencySymbol === "৳", `Product ${p.slug} currencySymbol must be ৳ (Found: ${p.currencySymbol})`);
+  assert(p.currency !== "USD", `Product ${p.slug} must not have USD currency`);
+  if (p.currency === "BDT") bdtCount++;
+  if (p.currency === "USD") usdCount++;
+}
+assert(usdCount === 0, `Total USD product prices must be 0 (Found: ${usdCount})`);
+assert(bdtCount === PRODUCTS.length, `Total BDT product prices must equal catalog size (${PRODUCTS.length})`);
+
+// 3. Unique product IDs & Slugs
 const idSet = new Set<string>();
 const slugSet = new Set<string>();
 const primaryImageSet = new Set<string>();
@@ -82,12 +96,12 @@ for (const p of PRODUCTS) {
   }
 }
 
-// 3. Baseline Slugs Preserved
+// 4. Baseline Slugs Preserved
 for (const baseSlug of baselineSlugs) {
   assert(slugSet.has(baseSlug), `Historical baseline slug preserved: ${baseSlug}`);
 }
 
-// 4. Collections Meta and Cover Images
+// 5. Collections Meta and Cover Images
 assert(COLLECTIONS_META.length >= 6, `Collections count >= 6 (Found: ${COLLECTIONS_META.length})`);
 for (const col of COLLECTIONS_META) {
   const diskPath = path.join(process.cwd(), "public", col.coverImage.replace(/^\//, ""));
@@ -96,7 +110,7 @@ for (const col of COLLECTIONS_META) {
   assert(items.length >= 4, `Collection ${col.slug} has sufficient items (${items.length})`);
 }
 
-// 5. Query Utilities: Featured, Best Sellers, New Arrivals
+// 6. Query Utilities: Featured, Best Sellers, New Arrivals
 const featured = getFeaturedProducts();
 const bestSellers = getBestSellers();
 const newArrivals = getNewArrivals();
@@ -105,7 +119,7 @@ assert(featured.length >= 6, `Featured products count >= 6 (Found: ${featured.le
 assert(bestSellers.length >= 6, `Best sellers count >= 6 (Found: ${bestSellers.length})`);
 assert(newArrivals.length >= 6, `New arrivals count >= 6 (Found: ${newArrivals.length})`);
 
-// 6. Related Products Logic
+// 7. Related Products Logic
 for (const p of PRODUCTS) {
   const related = getRelatedProducts(p.slug, 4);
   assert(related.length === 4, `Related products count is exactly 4 for ${p.slug} (Found: ${related.length})`);
@@ -115,13 +129,13 @@ for (const p of PRODUCTS) {
   assert(relatedSlugs.size === related.length, `Related products contain no duplicates for ${p.slug}`);
 }
 
-// 7. Slug Resolution via getProductBySlug
+// 8. Slug Resolution via getProductBySlug
 for (const p of PRODUCTS) {
   const resolved = getProductBySlug(p.slug);
   assert(resolved?.id === p.id, `getProductBySlug('${p.slug}') resolves correctly`);
 }
 
-// 8. Editorial & Hero Assets
+// 9. Editorial & Hero Assets
 const extraAssets = [
   "/images/fallback-sunglasses.jpg",
   "/images/hero/hero-sunglasses.jpg",
