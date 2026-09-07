@@ -30,8 +30,8 @@ function loadEnvLocal() {
 loadEnvLocal();
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:55321";
-const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const ANON_KEY: string = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const SERVICE_ROLE_KEY: string = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 if (!ANON_KEY || !SERVICE_ROLE_KEY) {
   throw new Error("Required Supabase credentials missing from environment / .env.local");
@@ -108,8 +108,8 @@ async function runRouteAuthTests() {
     global: { headers: { Authorization: `Bearer ${outsiderAuth.data.session?.access_token}` } },
   });
 
-  const { data: outsiderProfile } = await outsiderUserClient
-    .from("admin_profiles")
+  const { data: outsiderProfile } = await (outsiderUserClient
+    .from("admin_profiles") as any)
     .select("id, role")
     .eq("id", outsiderAuth.data.user!.id)
     .maybeSingle();
@@ -130,8 +130,8 @@ async function runRouteAuthTests() {
     global: { headers: { Authorization: `Bearer ${adminAuth.data.session?.access_token}` } },
   });
 
-  const { data: adminProfile } = await adminUserClient
-    .from("admin_profiles")
+  const { data: adminProfile } = await (adminUserClient
+    .from("admin_profiles") as any)
     .select("id, role")
     .eq("id", adminAuth.data.user!.id)
     .single();
@@ -152,8 +152,8 @@ async function runRouteAuthTests() {
     global: { headers: { Authorization: `Bearer ${ownerAuth.data.session?.access_token}` } },
   });
 
-  const { data: ownerProfile } = await ownerUserClient
-    .from("admin_profiles")
+  const { data: ownerProfile } = await (ownerUserClient
+    .from("admin_profiles") as any)
     .select("id, role")
     .eq("id", ownerAuth.data.user!.id)
     .single();

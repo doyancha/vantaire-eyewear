@@ -30,8 +30,8 @@ function loadEnvLocal() {
 loadEnvLocal();
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:55321";
-const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const ANON_KEY: string = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const SERVICE_ROLE_KEY: string = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 if (!ANON_KEY || !SERVICE_ROLE_KEY) {
   throw new Error("Required Supabase credentials missing from environment / .env.local");
@@ -137,16 +137,16 @@ async function runSecuritySuite() {
   const outsiderId = await ensureUser(testCredentials.outsider.email, testCredentials.outsider.password);
 
   // Setup admin_profiles
-  await adminClient
-    .from("admin_profiles")
+  await (adminClient
+    .from("admin_profiles") as any)
     .upsert({ id: ownerId, role: "owner", display_name: testCredentials.owner.displayName });
 
-  await adminClient
-    .from("admin_profiles")
+  await (adminClient
+    .from("admin_profiles") as any)
     .upsert({ id: adminId, role: "admin", display_name: testCredentials.admin.displayName });
 
   // Ensure outsider has NO admin profile
-  await adminClient.from("admin_profiles").delete().eq("id", outsiderId);
+  await (adminClient.from("admin_profiles") as any).delete().eq("id", outsiderId);
 
   assert(Boolean(ownerId && adminId && outsiderId), "Local test users provisioned successfully");
 
@@ -183,7 +183,7 @@ async function runSecuritySuite() {
   assert(Boolean(ownerJwt && adminJwt && outsiderJwt), "Real Supabase Auth JWTs acquired for Owner, Admin, and Outsider");
 
   // Seed baseline site_settings singleton if empty
-  await adminClient.from("site_settings").upsert({
+  await (adminClient.from("site_settings") as any).upsert({
     id: 1,
     whatsapp_default_greeting: "Hello VANTAIRE",
     contact_hours: "10-8",
@@ -235,8 +235,8 @@ async function runSecuritySuite() {
     is_active: false,
   };
 
-  const { data: actProdRes } = await adminClient.from("products").upsert(testActiveProd, { onConflict: "slug" }).select("id").single();
-  const { data: inactProdRes } = await adminClient.from("products").upsert(testInactiveProd, { onConflict: "slug" }).select("id").single();
+  const { data: actProdRes } = await adminClient.from("products").upsert(testActiveProd as any, { onConflict: "slug" }).select("id").single();
+  const { data: inactProdRes } = await adminClient.from("products").upsert(testInactiveProd as any, { onConflict: "slug" }).select("id").single();
 
   const testActiveCol = {
     slug: "sec-col-active",
@@ -256,45 +256,50 @@ async function runSecuritySuite() {
     is_active: false,
   };
 
-  const { data: actColRes } = await adminClient.from("collections").upsert(testActiveCol, { onConflict: "slug" }).select("id").single();
-  const { data: inactColRes } = await adminClient.from("collections").upsert(testInactiveCol, { onConflict: "slug" }).select("id").single();
+  const { data: actColRes } = await adminClient.from("collections").upsert(testActiveCol as any, { onConflict: "slug" }).select("id").single();
+  const { data: inactColRes } = await adminClient.from("collections").upsert(testInactiveCol as any, { onConflict: "slug" }).select("id").single();
+
+  const actProdId = (actProdRes as any)?.id;
+  const inactProdId = (inactProdRes as any)?.id;
+  const actColId = (actColRes as any)?.id;
+  const inactColId = (inactColRes as any)?.id;
 
   // Attach images
-  if (actProdRes) {
+  if (actProdId) {
     await adminClient.from("product_images").upsert({
-      product_id: actProdRes.id,
+      product_id: actProdId,
       storage_path: "/img-active.jpg",
       alt_text: "Active Image",
       is_primary: true,
-    }, { onConflict: "product_id,storage_path" });
+    } as any, { onConflict: "product_id,storage_path" });
   }
 
-  if (inactProdRes) {
+  if (inactProdId) {
     await adminClient.from("product_images").upsert({
-      product_id: inactProdRes.id,
+      product_id: inactProdId,
       storage_path: "/img-inactive.jpg",
       alt_text: "Inactive Image",
       is_primary: true,
-    }, { onConflict: "product_id,storage_path" });
+    } as any, { onConflict: "product_id,storage_path" });
   }
 
   // Attach relations
-  if (actProdRes && actColRes) {
-    await adminClient.from("product_collections").upsert({
-      product_id: actProdRes.id,
-      collection_id: actColRes.id,
+  if (actProdId && actColId) {
+    await (adminClient.from("product_collections") as any).upsert({
+      product_id: actProdId,
+      collection_id: actColId,
     });
   }
-  if (actProdRes && inactColRes) {
-    await adminClient.from("product_collections").upsert({
-      product_id: actProdRes.id,
-      collection_id: inactColRes.id,
+  if (actProdId && inactColId) {
+    await (adminClient.from("product_collections") as any).upsert({
+      product_id: actProdId,
+      collection_id: inactColId,
     });
   }
-  if (inactProdRes && actColRes) {
-    await adminClient.from("product_collections").upsert({
-      product_id: inactProdRes.id,
-      collection_id: actColRes.id,
+  if (inactProdId && actColId) {
+    await (adminClient.from("product_collections") as any).upsert({
+      product_id: inactProdId,
+      collection_id: actColId,
     });
   }
 
@@ -302,53 +307,54 @@ async function runSecuritySuite() {
   // [3/7] ANONYMOUS CONTEXT VERIFICATION
   // ---------------------------------------------------------------------------
   console.log("\n[3/7] Testing Anonymous Context RLS Enforcement...");
+  const anonToken = ANON_KEY as string;
 
   // Products
-  const anonActProd = await callPostgrest("products?slug=eq.sec-prod-active-slug", "GET", ANON_KEY);
+  const anonActProd = await callPostgrest("products?slug=eq.sec-prod-active-slug", "GET", anonToken);
   assert(anonActProd.status === 200 && anonActProd.data.length === 1, "Anonymous: can read active products (200 OK)");
 
-  const anonInactProd = await callPostgrest("products?slug=eq.sec-prod-inactive-slug", "GET", ANON_KEY);
+  const anonInactProd = await callPostgrest("products?slug=eq.sec-prod-inactive-slug", "GET", anonToken);
   assert(anonInactProd.status === 200 && anonInactProd.data.length === 0, "Anonymous: inactive products are completely invisible (0 rows)");
 
-  const anonProdInsert = await callPostgrest("products", "POST", ANON_KEY, { slug: "anon-insert", name: "Anon" });
+  const anonProdInsert = await callPostgrest("products", "POST", anonToken, { slug: "anon-insert", name: "Anon" });
   assert(anonProdInsert.status >= 400 || (Array.isArray(anonProdInsert.data) && anonProdInsert.data.length === 0), "Anonymous: product INSERT rejected by RLS");
 
-  const anonProdPatch = await callPostgrest("products?slug=eq.sec-prod-active-slug", "PATCH", ANON_KEY, { name: "Hacked" });
+  const anonProdPatch = await callPostgrest("products?slug=eq.sec-prod-active-slug", "PATCH", anonToken, { name: "Hacked" });
   assert(anonProdPatch.status >= 400 || (Array.isArray(anonProdPatch.data) && anonProdPatch.data.length === 0), "Anonymous: product UPDATE rejected by RLS (0 rows affected)");
 
-  const anonProdDelete = await callPostgrest("products?slug=eq.sec-prod-active-slug", "DELETE", ANON_KEY);
+  const anonProdDelete = await callPostgrest("products?slug=eq.sec-prod-active-slug", "DELETE", anonToken);
   assert(anonProdDelete.status >= 400 || (Array.isArray(anonProdDelete.data) && anonProdDelete.data.length === 0), "Anonymous: product DELETE rejected by RLS (0 rows affected)");
 
   // Collections
-  const anonActCol = await callPostgrest("collections?slug=eq.sec-col-active", "GET", ANON_KEY);
+  const anonActCol = await callPostgrest("collections?slug=eq.sec-col-active", "GET", anonToken);
   assert(anonActCol.status === 200 && anonActCol.data.length === 1, "Anonymous: can read active collections (200 OK)");
 
-  const anonInactCol = await callPostgrest("collections?slug=eq.sec-col-inactive", "GET", ANON_KEY);
+  const anonInactCol = await callPostgrest("collections?slug=eq.sec-col-inactive", "GET", anonToken);
   assert(anonInactCol.status === 200 && anonInactCol.data.length === 0, "Anonymous: inactive collections are completely invisible (0 rows)");
 
-  const anonColInsert = await callPostgrest("collections", "POST", ANON_KEY, { slug: "anon-col" });
+  const anonColInsert = await callPostgrest("collections", "POST", anonToken, { slug: "anon-col" });
   assert(anonColInsert.status >= 400 || (Array.isArray(anonColInsert.data) && anonColInsert.data.length === 0), "Anonymous: collection INSERT rejected by RLS");
 
   // Relationships & Images leak check
-  const anonImages = await callPostgrest(`product_images?storage_path=eq./img-inactive.jpg`, "GET", ANON_KEY);
+  const anonImages = await callPostgrest(`product_images?storage_path=eq./img-inactive.jpg`, "GET", anonToken);
   assert(anonImages.status === 200 && anonImages.data.length === 0, "Anonymous: images belonging to inactive products are invisible (0 rows)");
 
-  const anonRels = await callPostgrest("product_collections", "GET", ANON_KEY);
-  const leakedRels = anonRels.data.filter((r: any) => r.product_id === inactProdRes?.id || r.collection_id === inactColRes?.id);
+  const anonRels = await callPostgrest("product_collections", "GET", anonToken);
+  const leakedRels = anonRels.data.filter((r: any) => r.product_id === inactProdId || r.collection_id === inactColId);
   assert(anonRels.status === 200 && leakedRels.length === 0, "Anonymous: relationships involving inactive items are invisible (0 leaked relations)");
 
   // Site settings
-  const anonSettingsGet = await callPostgrest("site_settings?id=eq.1", "GET", ANON_KEY);
+  const anonSettingsGet = await callPostgrest("site_settings?id=eq.1", "GET", anonToken);
   assert(anonSettingsGet.status === 200 && anonSettingsGet.data.length === 1, "Anonymous: can read public site_settings (200 OK)");
 
-  const anonSettingsPatch = await callPostgrest("site_settings?id=eq.1", "PATCH", ANON_KEY, { whatsapp_default_greeting: "Hacked" });
+  const anonSettingsPatch = await callPostgrest("site_settings?id=eq.1", "PATCH", anonToken, { whatsapp_default_greeting: "Hacked" });
   assert(anonSettingsPatch.status >= 400 || (Array.isArray(anonSettingsPatch.data) && anonSettingsPatch.data.length === 0), "Anonymous: site_settings UPDATE rejected by RLS (0 rows affected)");
 
   // Admin profiles
-  const anonAdminProfiles = await callPostgrest("admin_profiles", "GET", ANON_KEY);
+  const anonAdminProfiles = await callPostgrest("admin_profiles", "GET", anonToken);
   assert(anonAdminProfiles.status === 200 && anonAdminProfiles.data.length === 0, "Anonymous: cannot enumerate admin_profiles (0 rows)");
 
-  const anonProfileInsert = await callPostgrest("admin_profiles", "POST", ANON_KEY, { role: "admin" });
+  const anonProfileInsert = await callPostgrest("admin_profiles", "POST", anonToken, { role: "admin" });
   assert(anonProfileInsert.status >= 400 || (Array.isArray(anonProfileInsert.data) && anonProfileInsert.data.length === 0), "Anonymous: admin_profiles INSERT rejected by RLS");
 
   // ---------------------------------------------------------------------------
@@ -430,7 +436,7 @@ async function runSecuritySuite() {
   });
   assert(adminSettingsUpdate.status === 200 && adminSettingsUpdate.data.length === 1, "Admin: authorized site_settings UPDATE succeeds");
   // Restore
-  await adminClient.from("site_settings").update({ delivery_fee_inside_dhaka: 70 }).eq("id", 1);
+  await (adminClient.from("site_settings") as any).update({ delivery_fee_inside_dhaka: 70 }).eq("id", 1);
 
   // Admin Profile privileges
   const adminOwnProfile = await callPostgrest(`admin_profiles?id=eq.${adminId}`, "GET", adminJwt);
@@ -492,10 +498,10 @@ async function runSecuritySuite() {
   // [7/7] CLEANUP TEST FIXTURES
   // ---------------------------------------------------------------------------
   console.log("\n[7/7] Cleaning up security test fixtures...");
-  await adminClient.from("products").delete().eq("slug", "sec-prod-active-slug");
-  await adminClient.from("products").delete().eq("slug", "sec-prod-inactive-slug");
-  await adminClient.from("collections").delete().eq("slug", "sec-col-active");
-  await adminClient.from("collections").delete().eq("slug", "sec-col-inactive");
+  await (adminClient.from("products") as any).delete().eq("slug", "sec-prod-active-slug");
+  await (adminClient.from("products") as any).delete().eq("slug", "sec-prod-inactive-slug");
+  await (adminClient.from("collections") as any).delete().eq("slug", "sec-col-active");
+  await (adminClient.from("collections") as any).delete().eq("slug", "sec-col-inactive");
   if (tempStaffId) {
     await adminClient.auth.admin.deleteUser(tempStaffId);
   }
