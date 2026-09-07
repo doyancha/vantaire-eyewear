@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
-import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import { StorefrontChrome } from "@/components/layout/StorefrontChrome";
 import { siteConfig } from "@/lib/config";
 
 const playfair = Playfair_Display({
@@ -87,10 +85,7 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} ${inter.variable} font-sans bg-vantaire-black text-vantaire-warmWhite antialiased selection:bg-vantaire-champagne selection:text-vantaire-black flex flex-col min-h-screen`}
       >
-        <AnnouncementBar />
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <StorefrontChrome>{children}</StorefrontChrome>
       </body>
     </html>
   );

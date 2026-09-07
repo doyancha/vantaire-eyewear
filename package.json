@@ -10,6 +10,7 @@
     "validate:catalog": "tsx scripts/validate-catalog.ts"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.6",
     "@supabase/supabase-js": "^2.116.0",
     "lucide-react": "^0.475.0",
     "next": "15.1.12",
