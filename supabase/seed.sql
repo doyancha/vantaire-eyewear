@@ -1,0 +1,7 @@
+-- ==============================================================================
+-- VANTAIRE EYEWEAR v1.3 — LOCAL DATABASE SEED PLACEHOLDER
+-- ==============================================================================
+-- Notice: Phase 1 establishes the database schema and integrity constraints only.
+-- Canonical migration and seeding of the 42 production catalog records and 6 collections
+-- belongs exclusively to Phase 3.
+-- ==============================================================================

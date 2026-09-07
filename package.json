@@ -10,10 +10,12 @@
     "validate:catalog": "tsx scripts/validate-catalog.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
     "lucide-react": "^0.475.0",
     "next": "15.1.12",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -24,6 +26,7 @@
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.1.0",
     "postcss": "^8",
+    "supabase": "^2.117.0",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.23.13",
     "typescript": "^5"
