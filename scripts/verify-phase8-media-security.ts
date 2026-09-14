@@ -118,8 +118,13 @@ async function runMediaSecurityVerification() {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  // 1. Establish authentic identities
-  console.log("\n[1/5] Establishing Authenticated Security Test Contexts...");
+  // Clean any residual test fixtures from interrupted runs
+  await (adminClient.from("products") as any).delete().like("slug", "phase8-%");
+
+  // ---------------------------------------------------------------------------
+  // [1/6] Establishing Authenticated Security Test Contexts
+  // ---------------------------------------------------------------------------
+  console.log("\n[1/6] Establishing Authenticated Security Test Contexts (Owner, Admin, Outsider)...");
   const runtimeSecret = crypto.randomBytes(16).toString("hex") + "!Aa1";
 
   async function ensureUser(email: string, role?: "owner" | "admin") {
@@ -150,12 +155,20 @@ async function runMediaSecurityVerification() {
     return userId!;
   }
 
+  const ownerId = await ensureUser("owner@vantaire.local", "owner");
   const adminId = await ensureUser("admin@vantaire.local", "admin");
   const outsiderId = await ensureUser("outsider@vantaire.local");
 
   const authClient = createClient(SUPABASE_URL, ANON_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
+
+  const { data: ownerAuth } = await authClient.auth.signInWithPassword({
+    email: "owner@vantaire.local",
+    password: runtimeSecret,
+  });
+  const ownerJwt = ownerAuth.session?.access_token!;
+  assert(Boolean(ownerJwt), "Owner JWT acquired");
 
   const { data: adminAuth } = await authClient.auth.signInWithPassword({
     email: "admin@vantaire.local",
@@ -171,206 +184,433 @@ async function runMediaSecurityVerification() {
   const outsiderJwt = outsiderAuth.session?.access_token!;
   assert(Boolean(outsiderJwt), "Outsider JWT acquired");
 
-  // Fetch an existing active product for test references
-  const { data: existingProducts } = await adminClient
+  // Create an isolated temporary INACTIVE product fixture for non-masked negative tests
+  const testInactiveSlug = `phase8-neg-prod-${Date.now()}`;
+  const { data: tempInactiveProd, error: tempProdErr } = await (adminClient.from("products") as any)
+    .insert({
+      slug: testInactiveSlug,
+      name: "Phase 8 Negative Control Product",
+      short_name: "Negative Control",
+      category: "Sunglasses",
+      gender: "Unisex",
+      price: 3500,
+      currency: "BDT",
+      currency_symbol: "৳",
+      description: "Temporary inactive product to isolate RLS testing from primary integrity triggers",
+      short_description: "Negative control teaser",
+      frame_shape: "Round",
+      frame_look: "Metal",
+      frame_color: "Gold",
+      lens_color: "Green",
+      lens_type: "Polarized-Style Tint",
+      style_category: "Classic",
+      fit: "Universal",
+      features: ["Control Feature"],
+      seo_title: "Negative Control Title",
+      seo_description: "Negative control description",
+      is_active: false,
+    })
+    .select()
+    .single();
+
+  if (tempProdErr || !tempInactiveProd) throw tempProdErr;
+
+  // Insert a valid image row for this inactive product using controlled service role
+  const tempImageId = crypto.randomUUID();
+  const tempValidStoragePath = `products/${tempInactiveProd.slug}/image-1111111111111111.jpg`;
+  const { error: tempImgErr } = await adminClient.from("product_images").insert({
+    id: tempImageId,
+    product_id: tempInactiveProd.id,
+    storage_path: tempValidStoragePath,
+    alt_text: "Valid control image alt text",
+    is_primary: false,
+    sort_order: 0,
+  });
+  if (tempImgErr) throw tempImgErr;
+
+  // Retrieve an active product from the catalog for insert RLS controls (so trigger path validation passes and RLS is verified)
+  const { data: sampleActiveProd, error: sampleProdErr } = await adminClient
     .from("products")
     .select("id, slug")
     .eq("is_active", true)
-    .limit(1);
-
-  const sampleProd = existingProducts![0];
+    .limit(1)
+    .single();
+  if (sampleProdErr || !sampleActiveProd) throw sampleProdErr;
 
   // ---------------------------------------------------------------------------
-  // [2/5] Anonymous Context RLS Guards & RPC Denials
+  // [2/6] Anonymous Context RLS Guards & RPC Denials (Schema-Valid Controls)
   // ---------------------------------------------------------------------------
-  console.log("\n[2/5] Verifying Anonymous Context RLS Guards & RPC Denials...");
+  console.log("\n[2/6] Verifying Anonymous Context RLS Guards & RPC Denials...");
 
-  // Anonymous: INSERT product_images
+  // Anonymous: INSERT with fully valid metadata (valid path, valid alt, valid active product)
+  const anonValidPath = `products/${sampleActiveProd.slug}/image-aaaaaaaaaaaaaaaa.jpg`;
   const anonInsert = await callPostgrest("product_images", "POST", undefined, {
-    product_id: sampleProd.id,
-    storage_path: `products/${sampleProd.slug}/image-anon-test.jpg`,
-    alt_text: "Anonymous injection test",
+    product_id: sampleActiveProd.id,
+    storage_path: anonValidPath,
+    alt_text: "Anonymous injection with valid metadata",
+    is_primary: false,
+    sort_order: 1,
   });
-  assert(anonInsert.status >= 400, "Anonymous: product_images INSERT rejected by RLS");
+  if (!(anonInsert.status >= 400 && (anonInsert.data?.message?.includes("row-level security") || anonInsert.data?.code === "42501"))) {
+    console.error("anonInsert debug:", anonInsert.status, anonInsert.data);
+  }
+  assert(
+    anonInsert.status >= 400 &&
+      (anonInsert.data?.message?.includes("row-level security") || anonInsert.data?.code === "42501"),
+    "Anonymous: product_images INSERT rejected strictly by RLS (not path-format trigger)"
+  );
 
-  // Anonymous: UPDATE product_images
+  // Anonymous: UPDATE alt_text on valid existing row
   const anonUpdate = await callPostgrest(
-    `product_images?product_id=eq.${sampleProd.id}`,
+    `product_images?id=eq.${tempImageId}`,
     "PATCH",
     undefined,
-    { alt_text: "Anonymous edit attempt" }
+    { alt_text: "Anonymous alt text mutation attempt" }
   );
   assert(
     anonUpdate.status >= 400 || (Array.isArray(anonUpdate.data) && anonUpdate.data.length === 0),
-    "Anonymous: product_images UPDATE rejected by RLS"
+    "Anonymous: product_images UPDATE rejected strictly by RLS (0 rows modified)"
   );
 
-  // Anonymous: DELETE product_images
+  // Anonymous: DELETE on valid existing row of INACTIVE product (not masked by active-primary trigger)
   const anonDelete = await callPostgrest(
-    `product_images?product_id=eq.${sampleProd.id}`,
+    `product_images?id=eq.${tempImageId}`,
     "DELETE",
     undefined
   );
   assert(
     anonDelete.status >= 400 || (Array.isArray(anonDelete.data) && anonDelete.data.length === 0),
-    "Anonymous: product_images DELETE rejected by RLS"
+    "Anonymous: product_images DELETE rejected strictly by RLS (not masked by active-primary trigger)"
   );
 
   // Anonymous: RPC calls
   const anonRpc1 = await callRpc("set_product_primary_image", undefined, {
-    p_product_id: sampleProd.id,
-    p_image_id: crypto.randomUUID(),
+    p_product_id: tempInactiveProd.id,
+    p_image_id: tempImageId,
   });
   assert(anonRpc1.status >= 400, "Anonymous: RPC set_product_primary_image strictly blocked");
 
   const anonRpc2 = await callRpc("reorder_product_images", undefined, {
-    p_product_id: sampleProd.id,
-    p_image_ids: [],
+    p_product_id: tempInactiveProd.id,
+    p_image_ids: [tempImageId],
   });
   assert(anonRpc2.status >= 400, "Anonymous: RPC reorder_product_images strictly blocked");
 
   const anonRpc3 = await callRpc("remove_product_image_metadata", undefined, {
-    p_product_id: sampleProd.id,
-    p_image_id: crypto.randomUUID(),
+    p_product_id: tempInactiveProd.id,
+    p_image_id: tempImageId,
   });
   assert(anonRpc3.status >= 400, "Anonymous: RPC remove_product_image_metadata strictly blocked");
 
   // ---------------------------------------------------------------------------
-  // [3/5] Authenticated Outsider Context RLS Guards & RPC Denials
+  // [3/6] Authenticated Outsider Context RLS Guards & RPC Denials (Schema-Valid Controls)
   // ---------------------------------------------------------------------------
-  console.log("\n[3/5] Verifying Authenticated Outsider Context RLS Guards & RPC Denials...");
+  console.log("\n[3/6] Verifying Authenticated Outsider Context RLS Guards & RPC Denials...");
 
+  const outsiderValidPath = `products/${sampleActiveProd.slug}/image-bbbbbbbbbbbbbbbb.jpg`;
   const outsiderInsert = await callPostgrest("product_images", "POST", outsiderJwt, {
-    product_id: sampleProd.id,
-    storage_path: `products/${sampleProd.slug}/image-outsider.jpg`,
-    alt_text: "Outsider injection test",
+    product_id: sampleActiveProd.id,
+    storage_path: outsiderValidPath,
+    alt_text: "Outsider injection with valid metadata",
+    is_primary: false,
+    sort_order: 1,
   });
-  assert(outsiderInsert.status >= 400, "Outsider: product_images INSERT rejected by RLS");
+  if (!(outsiderInsert.status >= 400 && (outsiderInsert.data?.message?.includes("row-level security") || outsiderInsert.data?.code === "42501"))) {
+    console.error("outsiderInsert debug:", outsiderInsert.status, outsiderInsert.data);
+  }
+  assert(
+    outsiderInsert.status >= 400 &&
+      (outsiderInsert.data?.message?.includes("row-level security") || outsiderInsert.data?.code === "42501"),
+    "Outsider: product_images INSERT rejected strictly by RLS (not path-format trigger)"
+  );
 
   const outsiderUpdate = await callPostgrest(
-    `product_images?product_id=eq.${sampleProd.id}`,
+    `product_images?id=eq.${tempImageId}`,
     "PATCH",
     outsiderJwt,
-    { alt_text: "Outsider edit attempt" }
+    { alt_text: "Outsider alt text mutation attempt" }
   );
   assert(
     outsiderUpdate.status >= 400 || (Array.isArray(outsiderUpdate.data) && outsiderUpdate.data.length === 0),
-    "Outsider: product_images UPDATE rejected by RLS"
+    "Outsider: product_images UPDATE rejected strictly by RLS (0 rows modified)"
   );
 
   const outsiderDelete = await callPostgrest(
-    `product_images?product_id=eq.${sampleProd.id}`,
+    `product_images?id=eq.${tempImageId}`,
     "DELETE",
     outsiderJwt
   );
   assert(
     outsiderDelete.status >= 400 || (Array.isArray(outsiderDelete.data) && outsiderDelete.data.length === 0),
-    "Outsider: product_images DELETE rejected by RLS"
+    "Outsider: product_images DELETE rejected strictly by RLS (not masked by active-primary trigger)"
   );
 
   const outsiderRpc1 = await callRpc("set_product_primary_image", outsiderJwt, {
-    p_product_id: sampleProd.id,
-    p_image_id: crypto.randomUUID(),
+    p_product_id: tempInactiveProd.id,
+    p_image_id: tempImageId,
   });
-  assert(outsiderRpc1.status >= 400, "Outsider: RPC set_product_primary_image rejected (insufficient_privilege)");
+  assert(
+    outsiderRpc1.status >= 400 &&
+      (outsiderRpc1.data?.message?.includes("insufficient_privilege") || outsiderRpc1.data?.message?.includes("Access denied")),
+    "Outsider: RPC set_product_primary_image rejected with insufficient_privilege"
+  );
 
   const outsiderRpc2 = await callRpc("reorder_product_images", outsiderJwt, {
-    p_product_id: sampleProd.id,
-    p_image_ids: [],
+    p_product_id: tempInactiveProd.id,
+    p_image_ids: [tempImageId],
   });
-  assert(outsiderRpc2.status >= 400, "Outsider: RPC reorder_product_images rejected (insufficient_privilege)");
+  assert(
+    outsiderRpc2.status >= 400 &&
+      (outsiderRpc2.data?.message?.includes("insufficient_privilege") || outsiderRpc2.data?.message?.includes("Access denied")),
+    "Outsider: RPC reorder_product_images rejected with insufficient_privilege"
+  );
 
   const outsiderRpc3 = await callRpc("remove_product_image_metadata", outsiderJwt, {
-    p_product_id: sampleProd.id,
-    p_image_id: crypto.randomUUID(),
+    p_product_id: tempInactiveProd.id,
+    p_image_id: tempImageId,
   });
-  assert(outsiderRpc3.status >= 400, "Outsider: RPC remove_product_image_metadata rejected (insufficient_privilege)");
+  assert(
+    outsiderRpc3.status >= 400 &&
+      (outsiderRpc3.data?.message?.includes("insufficient_privilege") || outsiderRpc3.data?.message?.includes("Access denied")),
+    "Outsider: RPC remove_product_image_metadata rejected with insufficient_privilege"
+  );
+
+  // Clean up the temporary negative control product
+  await adminClient.from("product_images").delete().eq("product_id", tempInactiveProd.id);
+  await (adminClient.from("products") as any).delete().eq("id", tempInactiveProd.id);
 
   // ---------------------------------------------------------------------------
-  // [4/5] Admin Integrity Invariants & Trigger Enforcements
+  // [4/6] Active Product Direct Insert RLS Policy (Admin & Owner)
   // ---------------------------------------------------------------------------
-  console.log("\n[4/5] Testing Admin Integrity Invariants & Database Triggers...");
+  console.log("\n[4/6] Verifying Active Product Direct Insert Policy with Schema-Valid Controls...");
 
-  // Invariant 1: Inserting product directly with is_active = true must fail RLS
-  const activeProdInsert = await callPostgrest("products", "POST", adminJwt, {
-    slug: `phase8-active-test-${Date.now()}`,
-    name: "Active Direct Insert Test",
-    short_name: "Active Direct",
+  const baseSchemaValidProduct = {
     category: "Sunglasses",
     gender: "Unisex",
-    price: 3500,
-    description: "Testing active insert restriction",
-    short_description: "Active insert test",
-    frame_shape: "Square",
+    price: 3600,
+    currency: "BDT",
+    currency_symbol: "৳",
+    description: "Fully valid description satisfying all non-null and domain check constraints.",
+    short_description: "Valid teaser teaser teaser",
+    frame_shape: "Aviator",
     frame_look: "Metal",
     frame_color: "Gold",
     lens_color: "Green",
-    lens_type: "Tinted",
-    style_category: "Classic",
-    fit: "Universal",
-    features: ["Feature A"],
-    seo_title: "Active Direct Insert",
-    seo_description: "Active direct insert test",
-    is_active: true, // MUST BE BLOCKED BY products_insert_admin
-  });
-  assert(
-    activeProdInsert.status >= 400,
-    "RLS Policy: products_insert_admin strictly blocks inserting products with is_active = true"
-  );
-
-  // Create an inactive draft product for subsequent tests
-  const draftSlug = `phase8-guard-prod-${Date.now()}`;
-  const draftCreate = await callPostgrest("products", "POST", adminJwt, {
-    slug: draftSlug,
-    name: "Phase 8 Guard Verification",
-    short_name: "Guard Verification",
-    category: "Sunglasses",
-    gender: "Unisex",
-    price: 3200,
-    currency: "BDT",
-    currency_symbol: "৳",
-    description: "Product for testing Phase 8 database triggers",
-    short_description: "Guard test",
-    frame_shape: "Round",
-    frame_look: "Tortoise",
-    frame_color: "Havana",
-    lens_color: "Brown",
     lens_type: "Polarized-Style Tint",
     style_category: "Classic",
     fit: "Universal",
-    features: ["Feature 1"],
-    seo_title: "Guard Verification Product",
-    seo_description: "Guard verification test product",
-    is_active: false,
+    features: ["Valid Bullet 1", "Valid Bullet 2"],
+    seo_title: "Valid SEO Title",
+    seo_description: "Valid SEO Description",
     featured: false,
     best_seller: false,
     new_arrival: false,
     in_stock: true,
-  });
-  if (draftCreate.status !== 201) {
-    console.error("draftCreate failed:", draftCreate.status, draftCreate.data);
-  }
-  assert(draftCreate.status === 201, "Admin: created draft product (is_active = false)");
-  const draftProd = draftCreate.data[0];
+  };
 
-  // Invariant 2: Activating product with 0 images must fail DB trigger
-  const activateNoImages = await callPostgrest(
-    `products?id=eq.${draftProd.id}`,
+  // Admin Direct Insert with is_active = true -> MUST FAIL strictly due to RLS WITH CHECK
+  const adminActiveInsert = await callPostgrest("products", "POST", adminJwt, {
+    ...baseSchemaValidProduct,
+    slug: `phase8-active-admin-${Date.now()}`,
+    name: "Admin Active Direct Insert",
+    short_name: "Admin Active",
+    is_active: true,
+  });
+  assert(
+    adminActiveInsert.status >= 400 &&
+      (adminActiveInsert.data?.message?.includes("row-level security") || adminActiveInsert.data?.code === "42501"),
+    "Admin: direct active product INSERT blocked strictly by RLS WITH CHECK (is_active = false)"
+  );
+
+  // Owner Direct Insert with is_active = true -> MUST FAIL strictly due to RLS WITH CHECK
+  const ownerActiveInsert = await callPostgrest("products", "POST", ownerJwt, {
+    ...baseSchemaValidProduct,
+    slug: `phase8-active-owner-${Date.now()}`,
+    name: "Owner Active Direct Insert",
+    short_name: "Owner Active",
+    is_active: true,
+  });
+  assert(
+    ownerActiveInsert.status >= 400 &&
+      (ownerActiveInsert.data?.message?.includes("row-level security") || ownerActiveInsert.data?.code === "42501"),
+    "Owner: direct active product INSERT blocked strictly by RLS WITH CHECK (is_active = false)"
+  );
+
+  // Owner Direct Insert with is_active = false -> MUST PASS (positive control)
+  const ownerDraftSlug = `phase8-draft-owner-${Date.now()}`;
+  const ownerDraftInsert = await callPostgrest("products", "POST", ownerJwt, {
+    ...baseSchemaValidProduct,
+    slug: ownerDraftSlug,
+    name: "Owner Draft Product",
+    short_name: "Owner Draft",
+    is_active: false,
+  });
+  assert(ownerDraftInsert.status === 201, "Owner: direct inactive draft product INSERT succeeds (201 Created)");
+  const ownerDraftProd = ownerDraftInsert.data[0];
+
+  // Clean up owner draft product
+  await (adminClient.from("products") as any).delete().eq("id", ownerDraftProd.id);
+
+  // ---------------------------------------------------------------------------
+  // [5/6] Owner & Admin Media Control Matrix (Positive Controls)
+  // ---------------------------------------------------------------------------
+  console.log("\n[5/6] Testing Owner & Admin Media Control Matrix (Positive Controls)...");
+
+  // Create an inactive draft product for matrix testing
+  const matrixSlug = `phase8-matrix-prod-${Date.now()}`;
+  const matrixCreate = await callPostgrest("products", "POST", adminJwt, {
+    ...baseSchemaValidProduct,
+    slug: matrixSlug,
+    name: "Phase 8 Matrix Product",
+    short_name: "Matrix Product",
+    is_active: false,
+  });
+  assert(matrixCreate.status === 201, "Admin: created inactive product for media control matrix");
+  const matrixProd = matrixCreate.data[0];
+
+  // 1. Owner valid product_images INSERT -> PASS
+  const ownerImgHex = crypto.randomBytes(8).toString("hex");
+  const ownerImgPath = `products/${matrixProd.slug}/image-${ownerImgHex}.jpg`;
+  const ownerImgIns = await callPostgrest("product_images", "POST", ownerJwt, {
+    product_id: matrixProd.id,
+    storage_path: ownerImgPath,
+    alt_text: "Owner uploaded image presentation",
+    is_primary: true,
+    sort_order: 0,
+  });
+  assert(ownerImgIns.status === 201, "Owner: valid product_images INSERT succeeds (201 Created)");
+  const ownerImg = ownerImgIns.data[0];
+
+  // 2. Admin valid product_images INSERT (second image) -> PASS
+  const adminImgHex = crypto.randomBytes(8).toString("hex");
+  const adminImgPath = `products/${matrixProd.slug}/image-${adminImgHex}.jpg`;
+  const adminImgIns = await callPostgrest("product_images", "POST", adminJwt, {
+    product_id: matrixProd.id,
+    storage_path: adminImgPath,
+    alt_text: "Admin uploaded image presentation",
+    is_primary: false,
+    sort_order: 1,
+  });
+  assert(adminImgIns.status === 201, "Admin: valid product_images INSERT succeeds (201 Created)");
+  const adminImg = adminImgIns.data[0];
+
+  // 3. Owner valid alt-text UPDATE -> PASS
+  const ownerAltUpdate = await callPostgrest(
+    `product_images?id=eq.${ownerImg.id}`,
+    "PATCH",
+    ownerJwt,
+    { alt_text: "Owner updated alt text" }
+  );
+  assert(ownerAltUpdate.status === 200 && ownerAltUpdate.data.length === 1, "Owner: valid alt-text UPDATE succeeds");
+
+  // 4. Admin valid alt-text UPDATE -> PASS
+  const adminAltUpdate = await callPostgrest(
+    `product_images?id=eq.${adminImg.id}`,
+    "PATCH",
+    adminJwt,
+    { alt_text: "Admin updated alt text" }
+  );
+  assert(adminAltUpdate.status === 200 && adminAltUpdate.data.length === 1, "Admin: valid alt-text UPDATE succeeds");
+
+  // 5. Owner RPC set_product_primary_image -> PASS
+  const ownerRpcPrimary = await callRpc("set_product_primary_image", ownerJwt, {
+    p_product_id: matrixProd.id,
+    p_image_id: adminImg.id,
+  });
+  assert(ownerRpcPrimary.status === 200 || ownerRpcPrimary.status === 204, "Owner: RPC set_product_primary_image succeeds");
+
+  // 6. Admin RPC set_product_primary_image -> PASS
+  const adminRpcPrimary = await callRpc("set_product_primary_image", adminJwt, {
+    p_product_id: matrixProd.id,
+    p_image_id: ownerImg.id,
+  });
+  if (!(adminRpcPrimary.status === 200 || adminRpcPrimary.status === 204)) {
+    console.error("adminRpcPrimary debug:", adminRpcPrimary.status, adminRpcPrimary.data);
+  }
+  assert(adminRpcPrimary.status === 200 || adminRpcPrimary.status === 204, "Admin: RPC set_product_primary_image succeeds");
+
+  // 7. Owner RPC reorder_product_images -> PASS
+  const ownerRpcReorder = await callRpc("reorder_product_images", ownerJwt, {
+    p_product_id: matrixProd.id,
+    p_image_ids: [adminImg.id, ownerImg.id],
+  });
+  assert(ownerRpcReorder.status === 200 || ownerRpcReorder.status === 204, "Owner: RPC reorder_product_images succeeds");
+
+  // 8. Admin RPC reorder_product_images -> PASS
+  const adminRpcReorder = await callRpc("reorder_product_images", adminJwt, {
+    p_product_id: matrixProd.id,
+    p_image_ids: [ownerImg.id, adminImg.id],
+  });
+  assert(adminRpcReorder.status === 200 || adminRpcReorder.status === 204, "Admin: RPC reorder_product_images succeeds");
+
+  // 9. Owner Storage upload & delete
+  const ownerStorageClient = createClient(SUPABASE_URL, ANON_KEY, {
+    global: { headers: { Authorization: `Bearer ${ownerJwt}` } },
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const dummyBuffer = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01]);
+  const ownerStoragePath = `products/${matrixProd.slug}/image-${crypto.randomBytes(8).toString("hex")}.jpg`;
+  const { error: ownerStoreUpErr } = await ownerStorageClient.storage
+    .from("product-media")
+    .upload(ownerStoragePath, dummyBuffer, { contentType: "image/jpeg" });
+  assert(!ownerStoreUpErr, "Owner: Storage upload succeeds under RLS");
+
+  const { error: ownerStoreDelErr } = await ownerStorageClient.storage
+    .from("product-media")
+    .remove([ownerStoragePath]);
+  assert(!ownerStoreDelErr, "Owner: Storage delete succeeds under RLS");
+
+  // 10. Owner RPC remove_product_image_metadata on inactive product -> PASS
+  const ownerRpcRemove = await callRpc("remove_product_image_metadata", ownerJwt, {
+    p_product_id: matrixProd.id,
+    p_image_id: adminImg.id,
+  });
+  assert(ownerRpcRemove.status === 200, "Owner: RPC remove_product_image_metadata succeeds");
+
+  // 11. Admin RPC remove_product_image_metadata on remaining image of inactive product -> PASS
+  const adminRpcRemove = await callRpc("remove_product_image_metadata", adminJwt, {
+    p_product_id: matrixProd.id,
+    p_image_id: ownerImg.id,
+  });
+  assert(adminRpcRemove.status === 200, "Admin: RPC remove_product_image_metadata succeeds on inactive product");
+
+  // Clean up matrix product
+  await (adminClient.from("products") as any).delete().eq("id", matrixProd.id);
+
+  // ---------------------------------------------------------------------------
+  // [6/6] Admin Database Triggers & Exact Failure Attribution
+  // ---------------------------------------------------------------------------
+  console.log("\n[6/6] Testing Database Triggers & Exact Failure Attribution...");
+
+  const guardSlug = `phase8-guard-prod-${Date.now()}`;
+  const guardCreate = await callPostgrest("products", "POST", adminJwt, {
+    ...baseSchemaValidProduct,
+    slug: guardSlug,
+    name: "Phase 8 Guard Verification",
+    short_name: "Guard Verification",
+    is_active: false,
+  });
+  assert(guardCreate.status === 201, "Admin: created draft product for trigger testing");
+  const guardProd = guardCreate.data[0];
+
+  // Trigger 1: Activation Guard with 0 images
+  const activate0Images = await callPostgrest(
+    `products?id=eq.${guardProd.id}`,
     "PATCH",
     adminJwt,
     { is_active: true }
   );
   assert(
-    activateNoImages.status >= 400 &&
-      (activateNoImages.data?.message?.includes("Cannot activate product without at least one image") ||
-       activateNoImages.data?.details?.includes("at least one image")),
+    activate0Images.status >= 400 &&
+      (activate0Images.data?.message?.includes("Cannot activate product without at least one image") ||
+       activate0Images.data?.details?.includes("at least one image")),
     "DB Trigger: trg_guard_product_activation blocks activating product with 0 images"
   );
 
-  // Invariant 3: Storage path traversal prohibited
+  // Trigger 2: Storage path traversal
   const pathTraversal = await callPostgrest("product_images", "POST", adminJwt, {
-    product_id: draftProd.id,
-    storage_path: `products/${draftProd.slug}/../evil/image-1234567890abcdef.jpg`,
+    product_id: guardProd.id,
+    storage_path: `products/${guardProd.slug}/../evil/image-1234567890abcdef.jpg`,
     alt_text: "Traversal attack",
     is_primary: false,
   });
@@ -379,10 +619,10 @@ async function runMediaSecurityVerification() {
     "DB Trigger: trg_guard_product_image_storage_path blocks path traversal (..)"
   );
 
-  // Invariant 4: Storage path backslash prohibited
+  // Trigger 3: Storage path backslash
   const pathBackslash = await callPostgrest("product_images", "POST", adminJwt, {
-    product_id: draftProd.id,
-    storage_path: `products\\${draftProd.slug}\\image-1234567890abcdef.jpg`,
+    product_id: guardProd.id,
+    storage_path: `products\\${guardProd.slug}\\image-1234567890abcdef.jpg`,
     alt_text: "Backslash attack",
     is_primary: false,
   });
@@ -391,10 +631,10 @@ async function runMediaSecurityVerification() {
     "DB Trigger: trg_guard_product_image_storage_path blocks backslashes"
   );
 
-  // Invariant 5: Storage path external URL prohibited
+  // Trigger 4: Storage path protocol
   const pathProtocol = await callPostgrest("product_images", "POST", adminJwt, {
-    product_id: draftProd.id,
-    storage_path: `https://evil.com/products/${draftProd.slug}/image-1234567890abcdef.jpg`,
+    product_id: guardProd.id,
+    storage_path: `https://evil.com/products/${guardProd.slug}/image-1234567890abcdef.jpg`,
     alt_text: "Protocol attack",
     is_primary: false,
   });
@@ -403,9 +643,9 @@ async function runMediaSecurityVerification() {
     "DB Trigger: trg_guard_product_image_storage_path blocks external URLs (http/https)"
   );
 
-  // Invariant 6: Storage path slug mismatch prohibited
+  // Trigger 5: Storage path slug mismatch
   const pathSlugMismatch = await callPostgrest("product_images", "POST", adminJwt, {
-    product_id: draftProd.id,
+    product_id: guardProd.id,
     storage_path: `products/another-slug-hijack/image-1234567890abcdef.jpg`,
     alt_text: "Slug hijack attack",
     is_primary: false,
@@ -415,9 +655,9 @@ async function runMediaSecurityVerification() {
     "DB Trigger: trg_guard_product_image_storage_path blocks mismatched product slug"
   );
 
-  // Invariant 7: Storage path collections prefix prohibited
+  // Trigger 6: Storage path collections prefix
   const pathCollection = await callPostgrest("product_images", "POST", adminJwt, {
-    product_id: draftProd.id,
+    product_id: guardProd.id,
     storage_path: `collections/aviator/cover-1234567890abcdef.jpg`,
     alt_text: "Collection path hijack",
     is_primary: false,
@@ -427,10 +667,10 @@ async function runMediaSecurityVerification() {
     "DB Trigger: trg_guard_product_image_storage_path blocks collections/ prefix for product images"
   );
 
-  // Invariant 8: Storage path nested subdirectory prohibited
+  // Trigger 7: Storage path nested subdirectory
   const pathNested = await callPostgrest("product_images", "POST", adminJwt, {
-    product_id: draftProd.id,
-    storage_path: `products/${draftProd.slug}/nested/image-1234567890abcdef.jpg`,
+    product_id: guardProd.id,
+    storage_path: `products/${guardProd.slug}/nested/image-1234567890abcdef.jpg`,
     alt_text: "Nested path attack",
     is_primary: false,
   });
@@ -439,13 +679,25 @@ async function runMediaSecurityVerification() {
     "DB Trigger: trg_guard_product_image_storage_path blocks nested subdirectories"
   );
 
-  // Invariant 9: Insert 5 valid images (Max capacity)
+  // Trigger 8: Non-hex filename format
+  const pathNonHex = await callPostgrest("product_images", "POST", adminJwt, {
+    product_id: guardProd.id,
+    storage_path: `products/${guardProd.slug}/image-nonhex-filename.jpg`,
+    alt_text: "Non-hex filename attack",
+    is_primary: false,
+  });
+  assert(
+    pathNonHex.status >= 400 && pathNonHex.data?.message?.includes("filename must match primary-{hex} or image-{hex} format"),
+    "DB Trigger: trg_guard_product_image_storage_path blocks non-hex filenames"
+  );
+
+  // Insert 5 valid images (Max capacity)
   const imageIds: string[] = [];
   for (let i = 1; i <= 5; i++) {
     const hexHash = crypto.randomBytes(8).toString("hex");
     const ins = await callPostgrest("product_images", "POST", adminJwt, {
-      product_id: draftProd.id,
-      storage_path: `products/${draftProd.slug}/image-${hexHash}.jpg`,
+      product_id: guardProd.id,
+      storage_path: `products/${guardProd.slug}/image-${hexHash}.jpg`,
       alt_text: `Valid image ${i}`,
       is_primary: i === 1,
       sort_order: i - 1,
@@ -454,11 +706,11 @@ async function runMediaSecurityVerification() {
     imageIds.push(ins.data[0].id);
   }
 
-  // Invariant 10: Attempting to insert 6th image must fail DB trigger
+  // Trigger 9: 6th image over-limit
   const hex6 = crypto.randomBytes(8).toString("hex");
   const ins6 = await callPostgrest("product_images", "POST", adminJwt, {
-    product_id: draftProd.id,
-    storage_path: `products/${draftProd.slug}/image-${hex6}.jpg`,
+    product_id: guardProd.id,
+    storage_path: `products/${guardProd.slug}/image-${hex6}.jpg`,
     alt_text: "Image 6 over-limit attempt",
     is_primary: false,
     sort_order: 5,
@@ -468,27 +720,29 @@ async function runMediaSecurityVerification() {
     "DB Trigger: trg_guard_product_images_max_limit strictly blocks 6th image"
   );
 
-  // Now activate the product (has 5 images, exactly 1 primary) -> MUST SUCCEED
+  // Activate the product (now has 5 images and 1 primary) -> MUST SUCCEED
   const activateSuccess = await callPostgrest(
-    `products?id=eq.${draftProd.id}`,
+    `products?id=eq.${guardProd.id}`,
     "PATCH",
     adminJwt,
     { is_active: true }
   );
-  assert(activateSuccess.status === 200 && activateSuccess.data[0]?.is_active === true, "Product activation succeeds when exactly 1 primary image exists");
+  assert(
+    activateSuccess.status === 200 && activateSuccess.data[0]?.is_active === true,
+    "Product activation succeeds when exactly 1 primary image exists"
+  );
 
-  // Invariant 11: Active product cannot remove sole image
-  // Delete 4 images first
+  // Remove 4 images
   for (let i = 1; i < imageIds.length; i++) {
     await callRpc("remove_product_image_metadata", adminJwt, {
-      p_product_id: draftProd.id,
+      p_product_id: guardProd.id,
       p_image_id: imageIds[i],
     });
   }
 
-  // Attempt to remove the 1 remaining image of an ACTIVE product
+  // Trigger 10: Attempt to remove the 1 remaining image of an ACTIVE product
   const removeSoleImage = await callRpc("remove_product_image_metadata", adminJwt, {
-    p_product_id: draftProd.id,
+    p_product_id: guardProd.id,
     p_image_id: imageIds[0],
   });
   assert(
@@ -498,17 +752,15 @@ async function runMediaSecurityVerification() {
   );
 
   // ---------------------------------------------------------------------------
-  // [5/5] Cleanup Fixtures & Baseline Verification
+  // Final Cleanup & Baseline Verification
   // ---------------------------------------------------------------------------
-  console.log("\n[5/5] Cleaning Up Fixtures & Verifying Clean Baseline...");
+  console.log("\n[Cleanup] Cleaning Up Fixtures & Verifying Clean Baseline...");
 
-  // Deactivate product before deleting image
-  await adminClient.from("products").update({ is_active: false }).eq("id", draftProd.id);
-  await adminClient.from("product_images").delete().eq("product_id", draftProd.id);
-  // Delete the test product using adminClient
-  await adminClient.from("products").delete().eq("id", draftProd.id);
+  await adminClient.from("products").update({ is_active: false }).eq("id", guardProd.id);
+  await adminClient.from("product_images").delete().eq("product_id", guardProd.id);
+  await (adminClient.from("products") as any).delete().eq("id", guardProd.id);
+  await (adminClient.from("products") as any).delete().like("slug", "phase8-%");
 
-  // Verify baseline
   const { count: prodCount } = await adminClient
     .from("products")
     .select("id", { count: "exact", head: true });

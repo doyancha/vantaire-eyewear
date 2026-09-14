@@ -239,9 +239,15 @@ BEGIN
       USING ERRCODE = 'no_data_found';
   END IF;
 
+  -- Clear current primary first to satisfy partial unique index uq_product_images_single_primary
   UPDATE public.product_images
-  SET is_primary = (id = p_image_id)
-  WHERE product_id = p_product_id;
+  SET is_primary = false
+  WHERE product_id = p_product_id AND is_primary = true AND id <> p_image_id;
+
+  -- Set new primary image
+  UPDATE public.product_images
+  SET is_primary = true
+  WHERE product_id = p_product_id AND id = p_image_id;
 END;
 $$;
 
