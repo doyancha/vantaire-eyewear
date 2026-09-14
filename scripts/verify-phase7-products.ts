@@ -213,9 +213,23 @@ async function runPhase7ProductsVerification() {
 
   const runtimeSecret = crypto.randomBytes(16).toString("hex") + "!Aa1";
   const { data: listData } = await adminClient.auth.admin.listUsers();
-  const adminUser = listData?.users.find((u) => u.email === "admin@vantaire.local");
-  if (!adminUser) throw new Error("admin@vantaire.local not found");
-  await adminClient.auth.admin.updateUserById(adminUser.id, { password: runtimeSecret });
+  let adminUser = listData?.users.find((u) => u.email === "admin@vantaire.local");
+  if (!adminUser) {
+    const { data: created } = await adminClient.auth.admin.createUser({
+      email: "admin@vantaire.local",
+      password: runtimeSecret,
+      email_confirm: true,
+    });
+    adminUser = created.user!;
+  } else {
+    await adminClient.auth.admin.updateUserById(adminUser.id, { password: runtimeSecret });
+  }
+
+  await (adminClient.from("admin_profiles") as any).upsert({
+    id: adminUser.id,
+    role: "admin",
+    display_name: "Local Admin",
+  });
 
   const authClient = createClient(SUPABASE_URL, ANON_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },

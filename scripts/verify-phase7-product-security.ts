@@ -262,7 +262,7 @@ async function runProductSecurityVerification() {
     lens_type: "Gradient Tint",
     style_category: "Contemporary",
     fit: "Universal",
-    features: ["Handcrafted", "UV Protection"],
+    features: ["Feature A", "Feature B"],
     seo_title: "Auto Legacy Test",
     seo_description: "Auto legacy description",
     is_active: false,
