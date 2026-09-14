@@ -80,11 +80,10 @@ export function AdminMobileNav({
     },
     {
       name: "Products",
-      href: "#",
+      href: "/admin/products",
       icon: Glasses,
-      active: false,
-      enabled: false,
-      badge: "Phase 7",
+      active: pathname.startsWith("/admin/products"),
+      enabled: true,
     },
     {
       name: "Collections",

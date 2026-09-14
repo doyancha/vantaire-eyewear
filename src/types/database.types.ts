@@ -228,7 +228,7 @@ export type Database = {
           id?: string
           in_stock?: boolean
           is_active?: boolean
-          legacy_id: string
+          legacy_id?: string
           lens_color: string
           lens_type: string
           name: string

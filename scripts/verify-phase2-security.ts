@@ -429,9 +429,12 @@ async function runSecuritySuite() {
   });
   assert(adminProdUpdate.status === 200 && adminProdUpdate.data.length === 1, "Admin: authorized product UPDATE succeeds");
 
-  // Admin product delete
+  // Admin product hard DELETE is blocked in Phase 7 (soft-archive only)
   const adminProdDelete = await callPostgrest(`products?slug=eq.${adminNewProdSlug}`, "DELETE", adminJwt);
-  assert(adminProdDelete.status === 200 && adminProdDelete.data.length === 1, "Admin: authorized product DELETE succeeds");
+  assert(
+    adminProdDelete.status >= 400 || (Array.isArray(adminProdDelete.data) && adminProdDelete.data.length === 0),
+    "Admin: product hard DELETE is blocked (Phase 7 soft-archive only)"
+  );
 
   // Admin site_settings update
   const adminSettingsUpdate = await callPostgrest("site_settings?id=eq.1", "PATCH", adminJwt, {
@@ -503,6 +506,7 @@ async function runSecuritySuite() {
   console.log("\n[7/7] Cleaning up security test fixtures...");
   await (adminClient.from("products") as any).delete().eq("slug", "sec-prod-active-slug");
   await (adminClient.from("products") as any).delete().eq("slug", "sec-prod-inactive-slug");
+  await (adminClient.from("products") as any).delete().like("slug", "admin-test-prod-%");
   await (adminClient.from("collections") as any).delete().eq("slug", "sec-col-active");
   await (adminClient.from("collections") as any).delete().eq("slug", "sec-col-inactive");
   if (tempStaffId) {
