@@ -48,14 +48,35 @@ export async function updateSession(request: NextRequest) {
   if (pathname.startsWith("/admin") && pathname !== "/admin/login" && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
-    return NextResponse.redirect(url);
+    const redirectResponse = NextResponse.redirect(url);
+    redirectResponse.headers.set(
+      "Cache-Control",
+      "private, no-cache, no-store, max-age=0, must-revalidate"
+    );
+    redirectResponse.headers.set("Pragma", "no-cache");
+    return redirectResponse;
   }
 
   // Authenticated user navigating to login
   if (pathname === "/admin/login" && user) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin";
-    return NextResponse.redirect(url);
+    const redirectResponse = NextResponse.redirect(url);
+    redirectResponse.headers.set(
+      "Cache-Control",
+      "private, no-cache, no-store, max-age=0, must-revalidate"
+    );
+    redirectResponse.headers.set("Pragma", "no-cache");
+    return redirectResponse;
+  }
+
+  // Enforce private, non-cached delivery for all /admin routes
+  if (pathname.startsWith("/admin")) {
+    supabaseResponse.headers.set(
+      "Cache-Control",
+      "private, no-cache, no-store, max-age=0, must-revalidate"
+    );
+    supabaseResponse.headers.set("Pragma", "no-cache");
   }
 
   return supabaseResponse;

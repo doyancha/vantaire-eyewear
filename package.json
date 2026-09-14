@@ -17,7 +17,8 @@
     "verify:phase4-security": "tsx scripts/verify-phase4-storage-security.ts",
     "verify:phase5-parity": "tsx scripts/verify-phase5-storefront-parity.ts",
     "verify:phase5-routes": "tsx scripts/verify-phase5-routes.ts",
-    "verify:phase5": "tsx scripts/verify-phase5-storefront-parity.ts && tsx scripts/verify-phase5-routes.ts"
+    "verify:phase5": "tsx scripts/verify-phase5-storefront-parity.ts && tsx scripts/verify-phase5-routes.ts",
+    "verify:phase6": "tsx scripts/verify-phase6-admin-dashboard.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",
