@@ -368,6 +368,21 @@ export type Database = {
       get_admin_role: { Args: never; Returns: string }
       is_admin: { Args: never; Returns: boolean }
       is_owner: { Args: never; Returns: boolean }
+      remove_product_image_metadata: {
+        Args: { p_image_id: string; p_product_id: string }
+        Returns: {
+          deleted_storage_path: string
+          promoted_image_id: string
+        }[]
+      }
+      reorder_product_images: {
+        Args: { p_image_ids: string[]; p_product_id: string }
+        Returns: undefined
+      }
+      set_product_primary_image: {
+        Args: { p_image_id: string; p_product_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

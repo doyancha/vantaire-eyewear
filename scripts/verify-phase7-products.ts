@@ -379,7 +379,7 @@ async function runPhase7ProductsVerification() {
   const { error: imgInsErr } = await adminClient.from("product_images").insert({
     id: tempImgId,
     product_id: createdProd.id,
-    storage_path: "products/noir-sovereign-aviator/primary-c99a4f81d7cc.jpg",
+    storage_path: `products/${createdProd.slug}/primary-c99a4f81d7cc.jpg`,
     alt_text: "Test primary image",
     is_primary: true,
     sort_order: 0,

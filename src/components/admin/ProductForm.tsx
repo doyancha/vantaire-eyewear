@@ -391,7 +391,12 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
                 <span className="text-[10px] font-mono text-vantaire-muted">No Image</span>
               )}
             </div>
-            <p className="text-[10px] text-vantaire-muted">Managed via Media Library</p>
+            <Link
+              href={`/admin/products/${initialData.id}/media`}
+              className="inline-flex items-center gap-1 text-[11px] font-mono text-vantaire-champagne hover:underline"
+            >
+              <span>Manage Media &rarr;</span>
+            </Link>
           </div>
 
           {/* Immutable IDs */}

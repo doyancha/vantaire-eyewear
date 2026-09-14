@@ -17,6 +17,7 @@ import {
   Plus,
   Loader2,
   Sparkles,
+  Image as ImageIcon,
 } from "lucide-react";
 import { buildPublicStorageUrl } from "@/lib/data/media";
 import { archiveProductAction, restoreProductAction } from "@/lib/admin/product-actions";
@@ -393,6 +394,15 @@ export function ProductTable({ products }: ProductTableProps) {
                           >
                             <Edit className="w-3 h-3" />
                             <span>Edit</span>
+                          </Link>
+
+                          <Link
+                            href={`/admin/products/${p.id}/media`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] bg-vantaire-black/50 border border-vantaire-border text-vantaire-sand hover:text-vantaire-champagne hover:border-vantaire-champagne/60 transition-colors"
+                            title="Manage product media"
+                          >
+                            <ImageIcon className="w-3 h-3" />
+                            <span>Media</span>
                           </Link>
 
                           {p.is_active ? (

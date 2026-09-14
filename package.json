@@ -20,7 +20,9 @@
     "verify:phase5": "tsx scripts/verify-phase5-storefront-parity.ts && tsx scripts/verify-phase5-routes.ts",
     "verify:phase6": "tsx scripts/verify-phase6-admin-dashboard.ts",
     "verify:phase7": "tsx scripts/verify-phase7-products.ts",
-    "verify:phase7-security": "tsx scripts/verify-phase7-product-security.ts"
+    "verify:phase7-security": "tsx scripts/verify-phase7-product-security.ts",
+    "verify:phase8-media": "tsx scripts/verify-phase8-media.ts",
+    "verify:phase8-media-security": "tsx scripts/verify-phase8-media-security.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",

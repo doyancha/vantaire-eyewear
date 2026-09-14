@@ -53,11 +53,10 @@ export function AdminSidebar({
     },
     {
       name: "Media Library",
-      href: "#",
+      href: "/admin/media",
       icon: ImageIcon,
-      active: false,
-      enabled: false,
-      badge: "Phase 9",
+      active: pathname.startsWith("/admin/media"),
+      enabled: true,
     },
     {
       name: "Merchandising",
