@@ -197,8 +197,8 @@ export async function verifyPhase4Media() {
 
   let validCoverMappings = 0;
   for (const c of dbCollections || []) {
-    const expectedPath = `collections/collection-${c.slug}.jpg`;
-    if (c.cover_image === expectedPath) {
+    const expectedPath = manifest.entries.find((e) => e.entityType === "collection" && e.slug === c.slug)?.storagePath;
+    if (expectedPath && c.cover_image === expectedPath) {
       validCoverMappings++;
     } else {
       console.error(`  Collection ${c.slug} cover_image unexpected: ${c.cover_image} (expected ${expectedPath})`);

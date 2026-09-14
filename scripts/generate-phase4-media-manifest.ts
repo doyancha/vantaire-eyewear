@@ -72,7 +72,7 @@ export function buildMediaManifest(rootDir: string = process.cwd()): MediaManife
     const stat = fs.statSync(fullPath);
     const sha256 = computeFileSha256(fullPath);
     const mimeType = getMimeType(fullPath);
-    const filename = path.basename(fullPath);
+    const hashPrefix = sha256.slice(0, 12);
 
     entries.push({
       entityType: "product",
@@ -80,7 +80,7 @@ export function buildMediaManifest(rootDir: string = process.cwd()): MediaManife
       legacyId: product.id,
       name: product.name,
       sourcePath: normalizedRelative.replace(/\\/g, "/"),
-      storagePath: `products/${filename}`,
+      storagePath: `products/${product.slug}/primary-${hashPrefix}.jpg`,
       sha256,
       byteSize: stat.size,
       mimeType,
@@ -111,7 +111,7 @@ export function buildMediaManifest(rootDir: string = process.cwd()): MediaManife
     const stat = fs.statSync(fullPath);
     const sha256 = computeFileSha256(fullPath);
     const mimeType = getMimeType(fullPath);
-    const filename = path.basename(fullPath);
+    const hashPrefix = sha256.slice(0, 12);
 
     entries.push({
       entityType: "collection",
@@ -119,7 +119,7 @@ export function buildMediaManifest(rootDir: string = process.cwd()): MediaManife
       legacyId: null,
       name: collection.name,
       sourcePath: normalizedRelative.replace(/\\/g, "/"),
-      storagePath: `collections/${filename}`,
+      storagePath: `collections/${collection.slug}/cover-${hashPrefix}.jpg`,
       sha256,
       byteSize: stat.size,
       mimeType,

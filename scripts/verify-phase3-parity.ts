@@ -143,8 +143,10 @@ async function runParityVerification() {
     const nameMatch = dbCol.name === staticCol.name;
     const taglineMatch = dbCol.tagline === staticCol.tagline;
     const descMatch = dbCol.description === staticCol.description;
-    const expectedStorageCover = `collections/collection-${staticCol.slug}.jpg`;
-    const imgMatch = dbCol.cover_image === staticCol.coverImage || dbCol.cover_image === expectedStorageCover;
+    const imgMatch =
+      dbCol.cover_image === staticCol.coverImage ||
+      dbCol.cover_image.startsWith(`collections/${staticCol.slug}/cover-`) ||
+      dbCol.cover_image === `collections/collection-${staticCol.slug}.jpg`;
     const activeMatch = dbCol.is_active === true;
     const sortMatch = dbCol.sort_order === i;
 
@@ -302,7 +304,11 @@ async function runParityVerification() {
     name: c.name,
     tagline: c.tagline,
     description: c.description,
-    cover_image: c.cover_image === `collections/collection-${c.slug}.jpg` ? `/images/collections/collection-${c.slug}.jpg` : c.cover_image,
+    cover_image:
+      c.cover_image.startsWith(`collections/${c.slug}/cover-`) ||
+      c.cover_image === `collections/collection-${c.slug}.jpg`
+        ? `/images/collections/collection-${c.slug}.jpg`
+        : c.cover_image,
     is_active: c.is_active,
     sort_order: c.sort_order,
   }));

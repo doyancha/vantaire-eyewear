@@ -180,6 +180,12 @@ export async function runMediaMigration(): Promise<MigrationSummary> {
         continue;
       }
 
+      // Remove any obsolete image records for this product before inserting new content-addressed record
+      await (supabase.from("product_images") as any)
+        .delete()
+        .eq("product_id", dbProd.id)
+        .neq("storage_path", entry.storagePath);
+
       // Generate deterministic UUID for product_images row
       const imageId = generateDeterministicUuid(
         VANTAIRE_NAMESPACE,
@@ -230,6 +236,25 @@ export async function runMediaMigration(): Promise<MigrationSummary> {
       } else {
         summary.collectionsSynced++;
       }
+    }
+  }
+
+  // 7. Obsolete storage object cleanup
+  const validPaths = new Set(manifest.entries.map((e) => e.storagePath));
+  const { data: rootProdFiles } = await supabase.storage.from("product-media").list("products");
+  if (rootProdFiles) {
+    const obsolete = rootProdFiles.filter((f) => f.id !== null && !validPaths.has(`products/${f.name}`)).map((f) => `products/${f.name}`);
+    if (obsolete.length > 0) {
+      await supabase.storage.from("product-media").remove(obsolete);
+      console.log(`  ✓ Cleaned ${obsolete.length} obsolete flat product objects from storage.`);
+    }
+  }
+  const { data: rootCollFiles } = await supabase.storage.from("product-media").list("collections");
+  if (rootCollFiles) {
+    const obsolete = rootCollFiles.filter((f) => f.id !== null && !validPaths.has(`collections/${f.name}`)).map((f) => `collections/${f.name}`);
+    if (obsolete.length > 0) {
+      await supabase.storage.from("product-media").remove(obsolete);
+      console.log(`  ✓ Cleaned ${obsolete.length} obsolete flat collection objects from storage.`);
     }
   }
 
