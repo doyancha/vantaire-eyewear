@@ -115,7 +115,12 @@ async function runParityVerification() {
     .from("product_images")
     .select("*");
   assert(!imgErr && !!dbImages, "Fetched product_images from database");
-  assert(dbImages?.length === 0, `Product images row count is exactly 0 (Phase 4 baseline, found ${dbImages?.length})`);
+  const isPhase4Baseline = (dbImages?.length ?? 0) > 0;
+  if (isPhase4Baseline) {
+    assert(dbImages?.length === 42, `Product images row count is exactly 42 (Phase 4 baseline, found ${dbImages?.length})`);
+  } else {
+    assert(dbImages?.length === 0, `Product images row count is exactly 0 (Phase 3 baseline, found ${dbImages?.length})`);
+  }
 
   console.log("\n[TEST 2] Collections Field Parity & UUID Verification");
   console.log("--------------------------------------------------");
@@ -138,7 +143,8 @@ async function runParityVerification() {
     const nameMatch = dbCol.name === staticCol.name;
     const taglineMatch = dbCol.tagline === staticCol.tagline;
     const descMatch = dbCol.description === staticCol.description;
-    const imgMatch = dbCol.cover_image === staticCol.coverImage;
+    const expectedStorageCover = `collections/collection-${staticCol.slug}.jpg`;
+    const imgMatch = dbCol.cover_image === staticCol.coverImage || dbCol.cover_image === expectedStorageCover;
     const activeMatch = dbCol.is_active === true;
     const sortMatch = dbCol.sort_order === i;
 
@@ -296,7 +302,7 @@ async function runParityVerification() {
     name: c.name,
     tagline: c.tagline,
     description: c.description,
-    cover_image: c.cover_image,
+    cover_image: c.cover_image === `collections/collection-${c.slug}.jpg` ? `/images/collections/collection-${c.slug}.jpg` : c.cover_image,
     is_active: c.is_active,
     sort_order: c.sort_order,
   }));

@@ -10,7 +10,11 @@
     "validate:catalog": "tsx scripts/validate-catalog.ts",
     "generate:cms-seed": "tsx scripts/generate-phase3-seed.ts",
     "verify:cms-parity": "tsx scripts/verify-phase3-parity.ts",
-    "verify:phase3": "tsx scripts/verify-phase3-parity.ts"
+    "verify:phase3": "tsx scripts/verify-phase3-parity.ts",
+    "generate:media-manifest": "tsx scripts/generate-phase4-media-manifest.ts",
+    "migrate:phase4-media": "tsx scripts/migrate-phase4-media.ts",
+    "verify:phase4": "tsx scripts/verify-phase4-media.ts",
+    "verify:phase4-security": "tsx scripts/verify-phase4-storage-security.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",

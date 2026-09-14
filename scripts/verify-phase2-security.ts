@@ -182,15 +182,18 @@ async function runSecuritySuite() {
 
   assert(Boolean(ownerJwt && adminJwt && outsiderJwt), "Real Supabase Auth JWTs acquired for Owner, Admin, and Outsider");
 
-  // Seed baseline site_settings singleton if empty
-  await (adminClient.from("site_settings") as any).upsert({
-    id: 1,
-    whatsapp_default_greeting: "Hello VANTAIRE",
-    contact_hours: "10-8",
-    contact_friday_hours: "Closed",
-    delivery_advance_payment_note: "COD available",
-    delivery_packaging: "Protective case",
-  });
+  // Seed baseline site_settings singleton only if empty
+  const { data: existingSettings } = await adminClient.from("site_settings").select("id").eq("id", 1).maybeSingle();
+  if (!existingSettings) {
+    await (adminClient.from("site_settings") as any).insert({
+      id: 1,
+      whatsapp_default_greeting: "Hello VANTAIRE",
+      contact_hours: "10-8",
+      contact_friday_hours: "Closed",
+      delivery_advance_payment_note: "COD available",
+      delivery_packaging: "Protective case",
+    });
+  }
 
   // Seed fixture products (1 active, 1 inactive) and collection (1 active, 1 inactive)
   const testActiveProd = {
