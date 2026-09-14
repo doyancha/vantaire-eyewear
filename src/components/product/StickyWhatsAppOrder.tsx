@@ -4,12 +4,15 @@ import { Product } from "@/types/catalog";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { buildProductWhatsAppUrl } from "@/lib/whatsapp";
 
+import type { OperationalSettings } from "@/lib/data/mappers";
+
 interface StickyWhatsAppOrderProps {
   product: Product;
+  settings?: Partial<OperationalSettings>;
 }
 
-export function StickyWhatsAppOrder({ product }: StickyWhatsAppOrderProps) {
-  const whatsappUrl = buildProductWhatsAppUrl(product);
+export function StickyWhatsAppOrder({ product, settings }: StickyWhatsAppOrderProps) {
+  const whatsappUrl = buildProductWhatsAppUrl(product, { settings });
 
   return (
     <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-vantaire-black/95 backdrop-blur-md border-t border-vantaire-border/80 px-4 py-3 shadow-2xl">

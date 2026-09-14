@@ -1,6 +1,11 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getProductBySlug, getAllProducts, getRelatedProducts } from "@/lib/products";
+import {
+  getProductBySlug,
+  getProducts,
+  getRelatedProducts,
+  getSiteSettings,
+} from "@/lib/data/storefront";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductInfo } from "@/components/product/ProductInfo";
 import { StickyWhatsAppOrder } from "@/components/product/StickyWhatsAppOrder";
@@ -10,6 +15,8 @@ import { siteConfig } from "@/lib/config";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
+export const dynamicParams = true;
+
 interface ProductPageProps {
   params: Promise<{
     slug: string;
@@ -17,7 +24,7 @@ interface ProductPageProps {
 }
 
 export async function generateStaticParams() {
-  const products = getAllProducts();
+  const products = await getProducts();
   return products.map((p) => ({
     slug: p.slug,
   }));
@@ -25,7 +32,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     return {
@@ -59,13 +66,19 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     notFound();
   }
 
-  const related = getRelatedProducts(product.slug, 3);
+  const [related, settings] = await Promise.all([
+    getRelatedProducts(product.slug, 3),
+    getSiteSettings(),
+  ]);
+
+  const brandName = settings.brandName || siteConfig.brandName;
+  const siteUrl = settings.siteUrl || siteConfig.siteUrl;
 
   // Honest Structured Data (Schema.org Product without unverified specs, ratings or manufacturing claims)
   const jsonLd = {
@@ -76,11 +89,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     description: product.description,
     brand: {
       "@type": "Brand",
-      name: siteConfig.brandName,
+      name: brandName,
     },
     offers: {
       "@type": "Offer",
-      url: `${siteConfig.siteUrl}/products/${product.slug}`,
+      url: `${siteUrl}/products/${product.slug}`,
       priceCurrency: product.currency,
       price: product.price,
       availability: "https://schema.org/PreOrder",
@@ -114,7 +127,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             <li>
               <ChevronRight className="w-3 h-3" />
             </li>
-            <li className="text-vantaire-warmWhite font-medium truncate max-w-[200px] sm:max-w-none" aria-current="page">
+            <li
+              className="text-vantaire-warmWhite font-medium truncate max-w-[200px] sm:max-w-none"
+              aria-current="page"
+            >
               {product.name}
             </li>
           </ol>
@@ -122,7 +138,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           <ProductGallery images={product.images} productName={product.name} />
-          <ProductInfo product={product} />
+          <ProductInfo product={product} settings={settings} />
         </div>
 
         <div className="mt-24 pt-16 border-t border-vantaire-border/60">
@@ -141,9 +157,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 <span className="text-[10px] font-mono text-vantaire-champagne font-bold">
                   0{idx + 1}
                 </span>
-                <p className="text-xs text-vantaire-sand leading-relaxed">
-                  {feature}
-                </p>
+                <p className="text-xs text-vantaire-sand leading-relaxed">{feature}</p>
               </div>
             ))}
           </div>
@@ -161,7 +175,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         )}
       </div>
 
-      <StickyWhatsAppOrder product={product} />
+      <StickyWhatsAppOrder product={product} settings={settings} />
     </div>
   );
 }

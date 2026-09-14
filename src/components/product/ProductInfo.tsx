@@ -4,12 +4,15 @@ import { buildProductWhatsAppUrl } from "@/lib/whatsapp";
 import { siteConfig } from "@/lib/config";
 import { Truck, Sparkles, RefreshCw, Info } from "lucide-react";
 
+import type { OperationalSettings } from "@/lib/data/mappers";
+
 interface ProductInfoProps {
   product: Product;
+  settings?: OperationalSettings;
 }
 
-export function ProductInfo({ product }: ProductInfoProps) {
-  const whatsappUrl = buildProductWhatsAppUrl(product);
+export function ProductInfo({ product, settings }: ProductInfoProps) {
+  const whatsappUrl = buildProductWhatsAppUrl(product, { settings });
 
   return (
     <div className="space-y-6">

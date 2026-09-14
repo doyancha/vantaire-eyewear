@@ -4,40 +4,46 @@ import { EditorialStory } from "@/components/sections/EditorialStory";
 import { FinalCtaSection } from "@/components/sections/FinalCtaSection";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ProductGrid } from "@/components/product/ProductGrid";
-import { getFeaturedProducts, getBestSellers } from "@/lib/products";
+import { getFeaturedProducts, getBestSellers, getCollections } from "@/lib/data/storefront";
 import Link from "next/link";
 import { ArrowRight, Sparkles, Shield, MessageSquare } from "lucide-react";
 
-export default function HomePage() {
-  const featured = getFeaturedProducts().slice(0, 6);
+export default async function HomePage() {
+  const [featuredRaw, bestSellersRaw, collections] = await Promise.all([
+    getFeaturedProducts(),
+    getBestSellers(),
+    getCollections(),
+  ]);
+
+  const featured = featuredRaw.slice(0, 6);
   const featuredSlugs = new Set(featured.map((p) => p.slug));
-  const bestSellers = getBestSellers().filter((p) => !featuredSlugs.has(p.slug)).slice(0, 6);
+  const bestSellers = bestSellersRaw.filter((p) => !featuredSlugs.has(p.slug)).slice(0, 6);
 
   const occasions = [
     {
       title: "Daily Architectural",
       desc: "Balanced silhouettes for office, cafe appointments, and city strolls.",
       image: "/images/editorial/occasion-architectural.jpg",
-      link: "/collections/square"
+      link: "/collections/square",
     },
     {
       title: "Coastal & Travel",
       desc: "Sun-tinted lenses designed for open water and bright outdoor daylight.",
       image: "/images/editorial/occasion-coastal.jpg",
-      link: "/collections/polarized"
+      link: "/collections/polarized",
     },
     {
       title: "Highway & Driving",
       desc: "Carefully calibrated tint gradient designed for clear roadway and horizon vision.",
       image: "/images/editorial/occasion-highway.jpg",
-      link: "/collections/aviator"
+      link: "/collections/aviator",
     },
     {
       title: "Motion & Active",
       desc: "Wrap-around sports frames engineered for dynamic movement and outdoor endurance.",
       image: "/images/editorial/occasion-sport.jpg",
-      link: "/collections/sport"
-    }
+      link: "/collections/sport",
+    },
   ];
 
   return (
@@ -72,7 +78,7 @@ export default function HomePage() {
             title="Shop By Silhouette"
             subtitle="Explore our defined profiles: from aviator geometries to sculpted acetate cat-eyes."
           />
-          <CollectionsPreview />
+          <CollectionsPreview collections={collections} />
         </div>
       </section>
 

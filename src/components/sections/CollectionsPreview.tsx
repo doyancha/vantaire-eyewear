@@ -1,12 +1,19 @@
 import Link from "next/link";
 import Image from "next/image";
 import { COLLECTIONS_META } from "@/data/products";
+import { CollectionMeta } from "@/types/catalog";
 import { ArrowUpRight } from "lucide-react";
 
-export function CollectionsPreview() {
+interface CollectionsPreviewProps {
+  collections?: CollectionMeta[];
+}
+
+export function CollectionsPreview({ collections }: CollectionsPreviewProps) {
+  const items = collections || COLLECTIONS_META;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {COLLECTIONS_META.map((col) => (
+      {items.map((col) => (
         <Link
           key={col.slug}
           href={`/collections/${col.slug}`}
@@ -20,7 +27,7 @@ export function CollectionsPreview() {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover object-center opacity-60 group-hover:opacity-75 group-hover:scale-105 transition-all duration-700 ease-out"
           />
-          
+
           <div className="absolute inset-0 bg-gradient-to-t from-vantaire-black via-vantaire-black/40 to-transparent" />
 
           {/* Content */}

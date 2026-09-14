@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getCollectionsMeta, getCollectionMetaBySlug, getProductsByCollection } from "@/lib/products";
+import {
+  getCollections,
+  getCollectionBySlug,
+  getProductsByCollection,
+} from "@/lib/data/storefront";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+
+export const dynamicParams = true;
 
 interface CollectionPageProps {
   params: Promise<{
@@ -13,7 +19,7 @@ interface CollectionPageProps {
 }
 
 export async function generateStaticParams() {
-  const collections = getCollectionsMeta();
+  const collections = await getCollections();
   return collections.map((col) => ({
     slug: col.slug,
   }));
@@ -21,7 +27,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: CollectionPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const col = getCollectionMetaBySlug(slug);
+  const col = await getCollectionBySlug(slug);
 
   if (!col) {
     return {
@@ -42,13 +48,13 @@ export async function generateMetadata({ params }: CollectionPageProps): Promise
 
 export default async function CollectionDetailPage({ params }: CollectionPageProps) {
   const { slug } = await params;
-  const collection = getCollectionMetaBySlug(slug);
+  const collection = await getCollectionBySlug(slug);
 
   if (!collection) {
     notFound();
   }
 
-  const products = getProductsByCollection(collection.slug);
+  const products = await getProductsByCollection(collection.slug);
 
   return (
     <div className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,9 +77,7 @@ export default async function CollectionDetailPage({ params }: CollectionPagePro
           <li>
             <ChevronRight className="w-3 h-3" />
           </li>
-          <li className="text-vantaire-warmWhite font-medium">
-            {collection.name}
-          </li>
+          <li className="text-vantaire-warmWhite font-medium">{collection.name}</li>
         </ol>
       </nav>
 

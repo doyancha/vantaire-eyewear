@@ -14,7 +14,10 @@
     "generate:media-manifest": "tsx scripts/generate-phase4-media-manifest.ts",
     "migrate:phase4-media": "tsx scripts/migrate-phase4-media.ts",
     "verify:phase4": "tsx scripts/verify-phase4-media.ts",
-    "verify:phase4-security": "tsx scripts/verify-phase4-storage-security.ts"
+    "verify:phase4-security": "tsx scripts/verify-phase4-storage-security.ts",
+    "verify:phase5-parity": "tsx scripts/verify-phase5-storefront-parity.ts",
+    "verify:phase5-routes": "tsx scripts/verify-phase5-routes.ts",
+    "verify:phase5": "tsx scripts/verify-phase5-storefront-parity.ts && tsx scripts/verify-phase5-routes.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",
