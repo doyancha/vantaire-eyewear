@@ -429,6 +429,308 @@ async function runMerchandisingSecurityVerification() {
     });
     assert(ownerReorderCols.status === 200 && ownerReorderCols.data?.[0]?.success === true, "Owner: RPC reorder_collections succeeds");
 
+    // -------------------------------------------------------------------------
+    // [6.1] Mandatory Snapshot Verification (Prevent Direct Call Bypass)
+    // -------------------------------------------------------------------------
+    console.log("\n[6.1] Verifying Mandatory Reorder Snapshot Enforcement...");
+    // Admin: reorder_products with NULL expected snapshot -> BLOCKED
+    const adminNullProdSnap = await callRpc("reorder_products", admin.token, {
+      p_ordered_ids: prodIds,
+      p_expected_order: null,
+    });
+    assert(
+      adminNullProdSnap.status >= 400 &&
+        (adminNullProdSnap.data?.message?.includes("mandatory") || adminNullProdSnap.data?.details?.includes("mandatory") || adminNullProdSnap.data?.code === "23514"),
+      "Admin: reorder_products with NULL expected snapshot strictly BLOCKED"
+    );
+
+    // Admin: reorder_products omitting expected snapshot -> BLOCKED
+    const adminOmitProdSnap = await callRpc("reorder_products", admin.token, {
+      p_ordered_ids: prodIds,
+    });
+    assert(
+      adminOmitProdSnap.status >= 400 &&
+        (adminOmitProdSnap.data?.message?.includes("mandatory") || adminOmitProdSnap.data?.details?.includes("mandatory") || adminOmitProdSnap.data?.code === "23514"),
+      "Admin: reorder_products omitting expected snapshot strictly BLOCKED"
+    );
+
+    // Owner: reorder_products with NULL expected snapshot -> BLOCKED
+    const ownerNullProdSnap = await callRpc("reorder_products", owner.token, {
+      p_ordered_ids: prodIds,
+      p_expected_order: null,
+    });
+    assert(
+      ownerNullProdSnap.status >= 400 &&
+        (ownerNullProdSnap.data?.message?.includes("mandatory") || ownerNullProdSnap.data?.details?.includes("mandatory") || ownerNullProdSnap.data?.code === "23514"),
+      "Owner: reorder_products with NULL expected snapshot strictly BLOCKED"
+    );
+
+    // Admin: reorder_collections with NULL expected snapshot -> BLOCKED
+    const adminNullColSnap = await callRpc("reorder_collections", admin.token, {
+      p_ordered_ids: colIds,
+      p_expected_order: null,
+    });
+    assert(
+      adminNullColSnap.status >= 400 &&
+        (adminNullColSnap.data?.message?.includes("mandatory") || adminNullColSnap.data?.details?.includes("mandatory") || adminNullColSnap.data?.code === "23514"),
+      "Admin: reorder_collections with NULL expected snapshot strictly BLOCKED"
+    );
+
+    // Admin: reorder_collections omitting expected snapshot -> BLOCKED
+    const adminOmitColSnap = await callRpc("reorder_collections", admin.token, {
+      p_ordered_ids: colIds,
+    });
+    assert(
+      adminOmitColSnap.status >= 400 &&
+        (adminOmitColSnap.data?.message?.includes("mandatory") || adminOmitColSnap.data?.details?.includes("mandatory") || adminOmitColSnap.data?.code === "23514"),
+      "Admin: reorder_collections omitting expected snapshot strictly BLOCKED"
+    );
+
+    // Owner: reorder_collections with NULL expected snapshot -> BLOCKED
+    const ownerNullColSnap = await callRpc("reorder_collections", owner.token, {
+      p_ordered_ids: colIds,
+      p_expected_order: null,
+    });
+    assert(
+      ownerNullColSnap.status >= 400 &&
+        (ownerNullColSnap.data?.message?.includes("mandatory") || ownerNullColSnap.data?.details?.includes("mandatory") || ownerNullColSnap.data?.code === "23514"),
+      "Owner: reorder_collections with NULL expected snapshot strictly BLOCKED"
+    );
+
+    // -------------------------------------------------------------------------
+    // [6.2] True Concurrent Reorder Race (Snapshot Concurrency & Zero Lost Updates)
+    // -------------------------------------------------------------------------
+    console.log("\n[6.2] Testing True Concurrent Reorder Race (Products & Collections)...");
+    {
+      // Fetch fresh product order
+      const { data: currentProds } = await adminClient
+        .from("products")
+        .select("id")
+        .order("sort_order", { ascending: true });
+      const currentProdOrder = currentProds?.map((p) => p.id) || [];
+
+      // Plan two divergent reorders based on the identical current snapshot
+      const orderA = [...currentProdOrder];
+      const tempA = orderA[0];
+      orderA[0] = orderA[1];
+      orderA[1] = tempA;
+
+      const orderB = [...currentProdOrder];
+      const tempB = orderB[2];
+      orderB[2] = orderB[3];
+      orderB[3] = tempB;
+
+      // Launch both reorders simultaneously with the same expected snapshot
+      const [resA, resB] = await Promise.all([
+        callRpc("reorder_products", admin.token, {
+          p_ordered_ids: orderA,
+          p_expected_order: currentProdOrder,
+        }),
+        callRpc("reorder_products", owner.token, {
+          p_ordered_ids: orderB,
+          p_expected_order: currentProdOrder,
+        }),
+      ]);
+
+      const successCount = (resA.status === 200 ? 1 : 0) + (resB.status === 200 ? 1 : 0);
+      const conflictCount = (resA.status >= 400 ? 1 : 0) + (resB.status >= 400 ? 1 : 0);
+
+      assert(successCount === 1, "Concurrent product reorder: exactly one transaction succeeded (got 1)");
+      assert(conflictCount === 1, "Concurrent product reorder: exactly one transaction failed with conflict (got 1)");
+
+      // Verify the resulting DB order matches the successful transaction exactly (zero lost updates)
+      const winningOrder = resA.status === 200 ? orderA : orderB;
+      const { data: postRaceProds } = await adminClient
+        .from("products")
+        .select("id, sort_order")
+        .order("sort_order", { ascending: true });
+      const postRaceIds = postRaceProds?.map((p) => p.id) || [];
+
+      const exactMatch = postRaceIds.every((id, idx) => id === winningOrder[idx]);
+      assert(exactMatch, "Concurrent product reorder: resulting order perfectly matches winner with 0 lost updates");
+
+      // Check contiguity & uniqueness post-race
+      const distinctSorts = new Set(postRaceProds?.map((p) => p.sort_order)).size;
+      assert(distinctSorts === 42, "Concurrent product reorder: all 42 positions remain unique and contiguous");
+
+      // Restore canonical product order
+      await callRpc("reorder_products", admin.token, {
+        p_ordered_ids: prodIds,
+        p_expected_order: postRaceIds,
+      });
+
+      // Repeat for Collections
+      const { data: currentCols } = await adminClient
+        .from("collections")
+        .select("id")
+        .order("sort_order", { ascending: true });
+      const currentColOrder = currentCols?.map((c) => c.id) || [];
+
+      const colOrderA = [...currentColOrder];
+      const colTempA = colOrderA[0];
+      colOrderA[0] = colOrderA[1];
+      colOrderA[1] = colTempA;
+
+      const colOrderB = [...currentColOrder];
+      const colTempB = colOrderB[2];
+      colOrderB[2] = colOrderB[3];
+      colOrderB[3] = colTempB;
+
+      const [colResA, colResB] = await Promise.all([
+        callRpc("reorder_collections", admin.token, {
+          p_ordered_ids: colOrderA,
+          p_expected_order: currentColOrder,
+        }),
+        callRpc("reorder_collections", owner.token, {
+          p_ordered_ids: colOrderB,
+          p_expected_order: currentColOrder,
+        }),
+      ]);
+
+      const colSuccessCount = (colResA.status === 200 ? 1 : 0) + (colResB.status === 200 ? 1 : 0);
+      const colConflictCount = (colResA.status >= 400 ? 1 : 0) + (colResB.status >= 400 ? 1 : 0);
+
+      assert(colSuccessCount === 1, "Concurrent collection reorder: exactly one transaction succeeded (got 1)");
+      assert(colConflictCount === 1, "Concurrent collection reorder: exactly one transaction failed with conflict (got 1)");
+
+      const winningColOrder = colResA.status === 200 ? colOrderA : colOrderB;
+      const { data: postRaceCols } = await adminClient
+        .from("collections")
+        .select("id, sort_order")
+        .order("sort_order", { ascending: true });
+      const postRaceColIds = postRaceCols?.map((c) => c.id) || [];
+
+      const colExactMatch = postRaceColIds.every((id, idx) => id === winningColOrder[idx]);
+      assert(colExactMatch, "Concurrent collection reorder: resulting order perfectly matches winner with 0 lost updates");
+
+      // Restore canonical collection order
+      await callRpc("reorder_collections", admin.token, {
+        p_ordered_ids: colIds,
+        p_expected_order: postRaceColIds,
+      });
+    }
+
+    // -------------------------------------------------------------------------
+    // [6.3] Concurrent Sort Allocation via Advisory Locks
+    // -------------------------------------------------------------------------
+    console.log("\n[6.3] Testing Concurrent Sort Order Allocation (Products & Collections)...");
+    {
+      const slugP1 = `phase10-conc-prod-1-${Date.now()}`;
+      const slugP2 = `phase10-conc-prod-2-${Date.now()}`;
+
+      const prodPayload = (slug: string, name: string) => ({
+        slug,
+        name,
+        short_name: "Conc Prod",
+        category: "Sunglasses",
+        gender: "Unisex",
+        price: 9000,
+        currency: "BDT",
+        currency_symbol: "৳",
+        description: "Concurrent allocation test",
+        short_description: "Conc test",
+        frame_shape: "Square",
+        frame_look: "Classic Acetate",
+        frame_color: "Black",
+        lens_color: "Charcoal",
+        lens_type: "Polarized-Style Tint",
+        style_category: "Contemporary",
+        fit: "Universal",
+        features: ["Feature A"],
+        in_stock: true,
+        is_active: false,
+        seo_title: name,
+        seo_description: name,
+      });
+
+      // Concurrently insert two products omitting sort_order
+      const [p1Res, p2Res] = await Promise.all([
+        callPostgrest("products", "POST", admin.token, prodPayload(slugP1, "Conc Prod 1")),
+        callPostgrest("products", "POST", owner.token, prodPayload(slugP2, "Conc Prod 2")),
+      ]);
+
+      assert(p1Res.status === 201 && p2Res.status === 201, "Concurrent product insert: both inserts succeeded (201)");
+      const p1Sort = p1Res.data?.[0]?.sort_order;
+      const p2Sort = p2Res.data?.[0]?.sort_order;
+      assert(
+        typeof p1Sort === "number" && typeof p2Sort === "number" && p1Sort !== p2Sort,
+        `Concurrent product insert: sort_order allocated uniquely without collision (${p1Sort} vs ${p2Sort})`
+      );
+      assert(
+        (p1Sort === 42 && p2Sort === 43) || (p1Sort === 43 && p2Sort === 42),
+        "Concurrent product insert: assigned positions remain contiguous (42 and 43)"
+      );
+
+      // Clean up in reverse (LIFO) order
+      const higherId = p1Sort > p2Sort ? p1Res.data[0].id : p2Res.data[0].id;
+      const lowerId = p1Sort > p2Sort ? p2Res.data[0].id : p1Res.data[0].id;
+      await (adminClient.from("products") as any).delete().eq("id", higherId);
+      await (adminClient.from("products") as any).delete().eq("id", lowerId);
+
+      // Concurrently insert two collections omitting sort_order
+      const slugC1 = `phase10-conc-col-1-${Date.now()}`;
+      const slugC2 = `phase10-conc-col-2-${Date.now()}`;
+      const colPayload = (slug: string, name: string) => ({
+        slug,
+        name,
+        tagline: "Conc Col Tagline",
+        description: "Concurrent col description",
+        is_active: false,
+      });
+
+      const [c1Res, c2Res] = await Promise.all([
+        callPostgrest("collections", "POST", admin.token, colPayload(slugC1, "Conc Col 1")),
+        callPostgrest("collections", "POST", owner.token, colPayload(slugC2, "Conc Col 2")),
+      ]);
+
+      assert(c1Res.status === 201 && c2Res.status === 201, "Concurrent collection insert: both inserts succeeded (201)");
+      const c1Sort = c1Res.data?.[0]?.sort_order;
+      const c2Sort = c2Res.data?.[0]?.sort_order;
+      assert(
+        typeof c1Sort === "number" && typeof c2Sort === "number" && c1Sort !== c2Sort,
+        `Concurrent collection insert: sort_order allocated uniquely without collision (${c1Sort} vs ${c2Sort})`
+      );
+      assert(
+        (c1Sort === 6 && c2Sort === 7) || (c1Sort === 7 && c2Sort === 6),
+        "Concurrent collection insert: assigned positions remain contiguous (6 and 7)"
+      );
+
+      // Clean up in reverse order
+      const higherColId = c1Sort > c2Sort ? c1Res.data[0].id : c2Res.data[0].id;
+      const lowerColId = c1Sort > c2Sort ? c2Res.data[0].id : c1Res.data[0].id;
+      await (adminClient.from("collections") as any).delete().eq("id", higherColId);
+      await (adminClient.from("collections") as any).delete().eq("id", lowerColId);
+    }
+
+    // -------------------------------------------------------------------------
+    // [6.4] Gapped Sort Order Attack
+    // -------------------------------------------------------------------------
+    console.log("\n[6.4] Testing Gapped Sort Order Attack (Contiguity Integrity)...");
+    {
+      // Attempt to set a product sort_order to 999 -> BLOCKED by contiguity trigger
+      const gappedProd = await callPostgrest(`products?id=eq.${prodIds[prodIds.length - 1]}`, "PATCH", admin.token, {
+        sort_order: 999,
+      });
+      assert(
+        gappedProd.status >= 400 && (gappedProd.data?.code === "23514" || gappedProd.data?.message?.includes("contiguous")),
+        "Gapped product sort order: mutating to non-contiguous position (999) strictly BLOCKED by contiguity trigger"
+      );
+
+      // Attempt to set a collection sort_order to 999 -> BLOCKED by contiguity trigger
+      const gappedCol = await callPostgrest(`collections?id=eq.${colIds[colIds.length - 1]}`, "PATCH", admin.token, {
+        sort_order: 999,
+      });
+      assert(
+        gappedCol.status >= 400 && (gappedCol.data?.code === "23514" || gappedCol.data?.message?.includes("contiguous")),
+        "Gapped collection sort order: mutating to non-contiguous position (999) strictly BLOCKED by contiguity trigger"
+      );
+    }
+
+    // Clean up disposable test accounts from Supabase Auth
+    await adminClient.auth.admin.deleteUser(owner.id);
+    await adminClient.auth.admin.deleteUser(admin.id);
+    await adminClient.auth.admin.deleteUser(outsider.id);
+
     // Verify baseline counts
     const { count: finalProdCount } = await adminClient.from("products").select("*", { count: "exact", head: true });
     assert(finalProdCount === 42, `Clean baseline: exactly 42 products in database (got ${finalProdCount})`);
