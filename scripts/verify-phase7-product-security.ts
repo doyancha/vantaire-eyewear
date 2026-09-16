@@ -333,8 +333,10 @@ async function runProductSecurityVerification() {
 
   // 5. Cleanup and Baseline Verification
   console.log("\n[5/5] Cleaning Up Fixtures & Verifying Clean Baseline...");
-  await (adminClient.from("products") as any).delete().eq("slug", tempFixtureSlug);
-  await (adminClient.from("products") as any).delete().eq("id", insertedProd.id);
+  const delIns = await (adminClient.from("products") as any).delete().eq("id", insertedProd.id);
+  if (delIns.error) throw delIns.error;
+  const delTemp = await (adminClient.from("products") as any).delete().eq("slug", tempFixtureSlug);
+  if (delTemp.error) throw delTemp.error;
 
   const { count: finalCount } = await adminClient
     .from("products")

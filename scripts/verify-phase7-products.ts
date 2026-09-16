@@ -454,8 +454,10 @@ async function runPhase7ProductsVerification() {
 
   // Clean up test fixtures using service role
   await adminClient.from("product_images").delete().eq("id", tempImgId);
-  await adminClient.from("products").delete().eq("id", createdProd.id);
-  await adminClient.from("products").delete().eq("id", prod2.id);
+  const del2 = await adminClient.from("products").delete().eq("id", prod2.id);
+  if (del2.error) throw del2.error;
+  const del1 = await adminClient.from("products").delete().eq("id", createdProd.id);
+  if (del1.error) throw del1.error;
 
   // Verify exact baseline counts
   const { count: totalProds } = await adminClient

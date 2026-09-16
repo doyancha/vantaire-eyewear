@@ -59,11 +59,10 @@ export function AdminSidebar({
     },
     {
       name: "Merchandising",
-      href: "#",
+      href: "/admin/merchandising",
       icon: Sparkles,
-      active: false,
-      enabled: false,
-      badge: "Phase 10",
+      active: pathname.startsWith("/admin/merchandising"),
+      enabled: true,
     },
     {
       name: "Site Settings",

@@ -5,6 +5,7 @@ import { FinalCtaSection } from "@/components/sections/FinalCtaSection";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { getFeaturedProducts, getBestSellers, getCollections } from "@/lib/data/storefront";
+import { computeEffectiveHomepageProducts } from "@/lib/merchandising/curation";
 import Link from "next/link";
 import { ArrowRight, Sparkles, Shield, MessageSquare } from "lucide-react";
 
@@ -15,9 +16,8 @@ export default async function HomePage() {
     getCollections(),
   ]);
 
-  const featured = featuredRaw.slice(0, 6);
-  const featuredSlugs = new Set(featured.map((p) => p.slug));
-  const bestSellers = bestSellersRaw.filter((p) => !featuredSlugs.has(p.slug)).slice(0, 6);
+  const { effectiveFeatured: featured, effectiveBestSellers: bestSellers } =
+    computeEffectiveHomepageProducts(featuredRaw, bestSellersRaw);
 
   const occasions = [
     {

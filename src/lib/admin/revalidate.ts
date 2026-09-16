@@ -76,3 +76,50 @@ export async function revalidateCollectionCaches(options: RevalidateCollectionOp
     console.warn("[revalidateCollectionCaches] Cache revalidation notice:", err);
   }
 }
+
+interface RevalidateMerchandisingOptions {
+  productSlug?: string;
+  collectionSlug?: string;
+  reorderedProducts?: boolean;
+  reorderedCollections?: boolean;
+}
+
+/**
+ * Revalidates public storefront and admin cache tags and paths following merchandising modifications
+ * (flag changes, product global reordering, or collection global reordering).
+ */
+export async function revalidateMerchandisingCaches(options: RevalidateMerchandisingOptions = {}) {
+  try {
+    // 1. Global merchandising and product tags
+    revalidateTag(CACHE_TAGS.merchandising);
+    revalidateTag(CACHE_TAGS.products);
+
+    if (options.reorderedCollections || options.collectionSlug) {
+      revalidateTag(CACHE_TAGS.collections);
+    }
+
+    if (options.productSlug) {
+      revalidateTag(CACHE_TAGS.product(options.productSlug));
+      revalidatePath(`/products/${options.productSlug}`);
+    }
+
+    if (options.collectionSlug) {
+      revalidateTag(CACHE_TAGS.collection(options.collectionSlug));
+      revalidatePath(`/collections/${options.collectionSlug}`);
+    }
+
+    // 2. Public storefront surfaces affected by merchandising & ordering
+    revalidatePath("/");
+    revalidatePath("/shop");
+    revalidatePath("/collections");
+    revalidatePath("/sitemap.xml");
+
+    // 3. Admin backoffice surfaces
+    revalidatePath("/admin/merchandising");
+    revalidatePath("/admin/products");
+    revalidatePath("/admin/collections");
+    revalidatePath("/admin");
+  } catch (err) {
+    console.warn("[revalidateMerchandisingCaches] Cache revalidation notice:", err);
+  }
+}

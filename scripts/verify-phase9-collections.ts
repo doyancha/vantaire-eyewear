@@ -240,7 +240,6 @@ async function runCollectionVerification() {
         description: "Temporary draft collection to verify Phase 9 data integrity.",
         cover_image: null,
         is_active: false,
-        sort_order: 99,
       })
       .select()
       .single();

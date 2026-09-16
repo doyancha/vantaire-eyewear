@@ -375,9 +375,29 @@ export type Database = {
           promoted_image_id: string
         }[]
       }
+      reorder_collections: {
+        Args: {
+          p_expected_order?: string[]
+          p_ordered_ids: string[]
+        }
+        Returns: {
+          success: boolean
+          total_reordered: number
+        }[]
+      }
       reorder_product_images: {
         Args: { p_image_ids: string[]; p_product_id: string }
         Returns: undefined
+      }
+      reorder_products: {
+        Args: {
+          p_expected_order?: string[]
+          p_ordered_ids: string[]
+        }
+        Returns: {
+          success: boolean
+          total_reordered: number
+        }[]
       }
       set_collection_products: {
         Args: {
