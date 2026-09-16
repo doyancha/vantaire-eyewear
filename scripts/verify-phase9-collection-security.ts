@@ -441,12 +441,28 @@ async function runCollectionSecurityVerification() {
     );
 
     // Trigger Guard: Authenticated user attempting legacy static seed path
-    const seedPathAttempt = await callPostgrest(`collections?id=eq.${fixtureId}`, "PATCH", admin.token, {
+    const seedPathAdmin = await callPostgrest(`collections?id=eq.${fixtureId}`, "PATCH", admin.token, {
       cover_image: "/images/collections/collection-aviator.jpg",
     });
     assert(
-      seedPathAttempt.status >= 400 && seedPathAttempt.data?.code === "23514",
-      "DB Trigger: fn_guard_collection_cover_storage_path blocks authenticated users setting static seed paths"
+      seedPathAdmin.status >= 400 && seedPathAdmin.data?.code === "23514",
+      "DB Trigger: fn_guard_collection_cover_storage_path blocks Admin setting static seed paths"
+    );
+
+    const seedPathOwner = await callPostgrest(`collections?id=eq.${fixtureId}`, "PATCH", owner.token, {
+      cover_image: "/images/collections/collection-aviator.jpg",
+    });
+    assert(
+      seedPathOwner.status >= 400 && seedPathOwner.data?.code === "23514",
+      "DB Trigger: fn_guard_collection_cover_storage_path blocks Owner setting static seed paths"
+    );
+
+    const seedPathOutsider = await callPostgrest(`collections?id=eq.${fixtureId}`, "PATCH", outsider.token, {
+      cover_image: "/images/collections/collection-aviator.jpg",
+    });
+    assert(
+      seedPathOutsider.status === 200 && Array.isArray(seedPathOutsider.data) && seedPathOutsider.data.length === 0,
+      "Outsider setting static seed path blocked by RLS (0 rows affected)"
     );
   }
 
