@@ -12,7 +12,7 @@ export function ProductGrid({ products, priorityCount = 2 }: ProductGridProps) {
       <div className="py-20 text-center border border-dashed border-vantaire-border/80 p-8 max-w-lg mx-auto">
         <p className="font-serif text-xl text-vantaire-warmWhite">No sunglasses found</p>
         <p className="text-xs text-vantaire-muted mt-2">
-          Try clearing your filter or browse our complete collection of handcrafted eyewear.
+          Try clearing your filter or browse our complete collection of architectural eyewear.
         </p>
       </div>
     );

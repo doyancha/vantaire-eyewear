@@ -9,12 +9,15 @@ import { buildGeneralWhatsAppUrl } from "@/lib/whatsapp";
 import { COLLECTIONS_META } from "@/data/products";
 import { siteConfig } from "@/lib/config";
 import type { OperationalSettings } from "@/lib/data/mappers";
+import type { CollectionMeta } from "@/types/catalog";
 
 interface HeaderProps {
   settings?: OperationalSettings;
+  collections?: CollectionMeta[];
 }
 
-export function Header({ settings }: HeaderProps) {
+export function Header({ settings, collections }: HeaderProps) {
+  const navCollections = collections && collections.length > 0 ? collections : COLLECTIONS_META;
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [collectionsOpen, setCollectionsOpen] = useState(false);
@@ -152,7 +155,7 @@ export function Header({ settings }: HeaderProps) {
                       <div className="text-[10px] tracking-widest text-vantaire-muted uppercase px-3 py-1 font-semibold">
                         Curated Editions
                       </div>
-                      {COLLECTIONS_META.map((col) => (
+                      {navCollections.map((col) => (
                         <Link
                           key={col.slug}
                           href={`/collections/${col.slug}`}
@@ -260,7 +263,7 @@ export function Header({ settings }: HeaderProps) {
 
               {/* Nested collection links for mobile */}
               <div className="pl-4 space-y-2.5 border-l border-vantaire-border/50 my-2 text-xs tracking-wider normal-case text-vantaire-sand">
-                {COLLECTIONS_META.map((col) => (
+                {navCollections.map((col) => (
                   <Link
                     key={col.slug}
                     href={`/collections/${col.slug}`}

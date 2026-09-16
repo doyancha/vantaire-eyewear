@@ -7,7 +7,7 @@ import { revalidateSiteSettingsCaches } from "./revalidate";
 import { mapDbSiteSettings, OperationalSettings } from "@/lib/data/mappers";
 
 export type ActionResponse<T = any> =
-  | { success: true; data: T; message?: string }
+  | { success: true; data: T; message?: string; warning?: string }
   | { success: false; error: string; fieldErrors?: Record<string, string[]> };
 
 export interface UpdateSiteSettingsResult {
@@ -110,11 +110,14 @@ export async function updateSiteSettingsAction(
     const updatedRow = updatedRows[0];
 
     // 6. Revalidate cache surfaces across storefront and admin
-    await revalidateSiteSettingsCaches();
+    const reval = await revalidateSiteSettingsCaches();
 
     return {
       success: true,
-      message: "Site settings successfully updated and revalidated.",
+      message: reval.warning
+        ? `Site settings updated, but cache notice: ${reval.warning}`
+        : "Site settings successfully updated and revalidated.",
+      warning: reval.warning,
       data: {
         settings: mapDbSiteSettings(updatedRow),
         updatedAt: updatedRow.updated_at,

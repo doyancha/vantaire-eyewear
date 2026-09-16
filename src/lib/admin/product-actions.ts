@@ -19,6 +19,7 @@ export type ActionResponse<T = any> = {
   data?: T;
   errors?: Record<string, string[]>;
   conflict?: boolean;
+  warning?: string;
 };
 
 /**
@@ -131,11 +132,12 @@ export async function createProductAction(
   }
 
   // 5. Revalidate cache tags and routes
-  await revalidateProductCaches({ slug: inserted.slug });
+  const reval = await revalidateProductCaches({ slug: inserted.slug, type: "create" });
 
   return {
     success: true,
     message: `Product "${inserted.name}" created successfully as an inactive draft (${inserted.legacy_id}).`,
+    warning: reval.warning,
     data: inserted,
   };
 }
@@ -238,11 +240,15 @@ export async function updateProductAction(
   }
 
   // 5. Revalidate cache tags and routes
-  await revalidateProductCaches({ slug: updated.slug });
+  const reval = await revalidateProductCaches({
+    slug: updated.slug,
+    type: "update",
+  });
 
   return {
     success: true,
     message: `Product "${updated.name}" updated successfully.`,
+    warning: reval.warning,
     data: updated,
   };
 }
@@ -319,11 +325,12 @@ export async function archiveProductAction(
   }
 
   // 5. Revalidate cache
-  await revalidateProductCaches({ slug: updated.slug });
+  const reval = await revalidateProductCaches({ slug: updated.slug, type: "lifecycle" });
 
   return {
     success: true,
     message: `Product "${updated.name}" has been archived and hidden from the storefront.`,
+    warning: reval.warning,
     data: updated,
   };
 }
@@ -416,11 +423,12 @@ export async function restoreProductAction(
   }
 
   // 6. Revalidate cache
-  await revalidateProductCaches({ slug: updated.slug });
+  const reval = await revalidateProductCaches({ slug: updated.slug, type: "lifecycle" });
 
   return {
     success: true,
     message: `Product "${updated.name}" has been restored and is now active on the storefront.`,
+    warning: reval.warning,
     data: updated,
   };
 }

@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/server";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -8,7 +7,7 @@ import {
   buildProductStoragePath,
   validateAltText,
 } from "@/lib/admin/media-validation";
-import { revalidateProductCaches } from "@/lib/admin/revalidate";
+import { buildInvalidationPlan, applyInvalidationPlan } from "@/lib/cache/invalidation";
 import { ActionResponse } from "@/lib/admin/product-actions";
 import { Tables } from "@/types/database.types";
 
@@ -148,14 +147,18 @@ export async function uploadProductImageAction(
   }
 
   // 8. Revalidate caches
-  await revalidateProductCaches({ slug: product.slug });
-  revalidatePath(`/admin/products/${productId}/media`);
-  revalidatePath("/admin/products");
-  revalidatePath("/admin/media");
+  const reval = applyInvalidationPlan(
+    buildInvalidationPlan({
+      type: "product_media_updated",
+      productId,
+      slug: product.slug,
+    })
+  );
 
   return {
     success: true,
     message: "Image uploaded and cataloged successfully.",
+    warning: reval.warning,
     data: inserted as Tables<"product_images">,
   };
 }
@@ -271,14 +274,18 @@ export async function replaceProductImageAction(
   }
 
   // Revalidate caches
-  await revalidateProductCaches({ slug });
-  revalidatePath(`/admin/products/${productId}/media`);
-  revalidatePath("/admin/products");
-  revalidatePath("/admin/media");
+  const reval = applyInvalidationPlan(
+    buildInvalidationPlan({
+      type: "product_media_updated",
+      productId,
+      slug,
+    })
+  );
 
   return {
     success: true,
     message: "Image replaced successfully.",
+    warning: reval.warning,
     data: updated as Tables<"product_images">,
   };
 }
@@ -304,12 +311,15 @@ export async function setPrimaryImageAction(
   }
 
   const { data: prod } = await supabase.from("products").select("slug").eq("id", productId).single();
-  await revalidateProductCaches({ slug: prod?.slug });
-  revalidatePath(`/admin/products/${productId}/media`);
-  revalidatePath("/admin/products");
-  revalidatePath("/admin/media");
+  const reval = applyInvalidationPlan(
+    buildInvalidationPlan({
+      type: "product_media_updated",
+      productId,
+      slug: prod?.slug || "",
+    })
+  );
 
-  return { success: true, message: "Primary image updated successfully." };
+  return { success: true, message: "Primary image updated successfully.", warning: reval.warning };
 }
 
 /**
@@ -333,10 +343,15 @@ export async function reorderProductImagesAction(
   }
 
   const { data: prod } = await supabase.from("products").select("slug").eq("id", productId).single();
-  await revalidateProductCaches({ slug: prod?.slug });
-  revalidatePath(`/admin/products/${productId}/media`);
+  const reval = applyInvalidationPlan(
+    buildInvalidationPlan({
+      type: "product_media_updated",
+      productId,
+      slug: prod?.slug || "",
+    })
+  );
 
-  return { success: true, message: "Image order updated successfully." };
+  return { success: true, message: "Image order updated successfully.", warning: reval.warning };
 }
 
 /**
@@ -373,14 +388,18 @@ export async function removeProductImageAction(
   }
 
   const { data: prod } = await supabase.from("products").select("slug").eq("id", productId).single();
-  await revalidateProductCaches({ slug: prod?.slug });
-  revalidatePath(`/admin/products/${productId}/media`);
-  revalidatePath("/admin/products");
-  revalidatePath("/admin/media");
+  const reval = applyInvalidationPlan(
+    buildInvalidationPlan({
+      type: "product_media_updated",
+      productId,
+      slug: prod?.slug || "",
+    })
+  );
 
   return {
     success: true,
     message: "Image removed successfully.",
+    warning: reval.warning,
     data: { deletedPath, promotedId },
   };
 }
@@ -411,10 +430,15 @@ export async function updateImageAltTextAction(
   }
 
   const { data: prod } = await supabase.from("products").select("slug").eq("id", productId).single();
-  await revalidateProductCaches({ slug: prod?.slug });
-  revalidatePath(`/admin/products/${productId}/media`);
+  const reval = applyInvalidationPlan(
+    buildInvalidationPlan({
+      type: "product_media_updated",
+      productId,
+      slug: prod?.slug || "",
+    })
+  );
 
-  return { success: true, message: "Alt text updated successfully." };
+  return { success: true, message: "Alt text updated successfully.", warning: reval.warning };
 }
 
 /**

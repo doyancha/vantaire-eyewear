@@ -114,11 +114,12 @@ export async function createCollectionAction(
     };
   }
 
-  await revalidateCollectionCaches({ slug: data.slug });
+  const reval = await revalidateCollectionCaches({ slug: data.slug, type: "create" });
 
   return {
     success: true,
     message: `Collection draft '${data.name}' created successfully.`,
+    warning: reval.warning,
     data,
   };
 }
@@ -194,11 +195,12 @@ export async function updateCollectionAction(
     };
   }
 
-  await revalidateCollectionCaches({ slug: data.slug });
+  const reval = await revalidateCollectionCaches({ slug: data.slug, type: "update" });
 
   return {
     success: true,
     message: `Collection '${data.name}' updated successfully.`,
+    warning: reval.warning,
     data,
   };
 }
@@ -272,11 +274,12 @@ export async function archiveCollectionAction(
     };
   }
 
-  await revalidateCollectionCaches({ slug: data.slug });
+  const reval = await revalidateCollectionCaches({ slug: data.slug, type: "lifecycle" });
 
   return {
     success: true,
     message: `Collection '${data.name}' archived successfully.`,
+    warning: reval.warning,
     data,
   };
 }
@@ -386,11 +389,12 @@ export async function restoreCollectionAction(
     };
   }
 
-  await revalidateCollectionCaches({ slug: data.slug });
+  const reval = await revalidateCollectionCaches({ slug: data.slug, type: "lifecycle" });
 
   return {
     success: true,
     message: `Collection '${data.name}' published and restored successfully.`,
+    warning: reval.warning,
     data,
   };
 }
@@ -447,11 +451,12 @@ export async function saveCollectionMembershipAction(
     .eq("id", validated.collection_id)
     .maybeSingle();
 
-  await revalidateCollectionCaches({ slug: coll?.slug });
+  const reval = await revalidateCollectionCaches({ slug: coll?.slug, type: "membership" });
 
   return {
     success: true,
     message: `Assigned ${result?.member_count ?? validated.product_ids.length} products to collection successfully.`,
+    warning: reval.warning,
     data: {
       memberCount: result?.member_count ?? validated.product_ids.length,
       updatedAt: result?.updated_at ?? new Date().toISOString(),
@@ -559,11 +564,12 @@ export async function uploadCollectionCoverAction(
     };
   }
 
-  await revalidateCollectionCaches({ slug: updated.slug });
+  const reval = await revalidateCollectionCaches({ slug: updated.slug, type: "update" });
 
   return {
     success: true,
     message: "Collection cover image uploaded successfully.",
+    warning: reval.warning,
     data: { storagePath, updatedAt: updated.updated_at },
   };
 }
@@ -684,11 +690,12 @@ export async function replaceCollectionCoverAction(
     }
   }
 
-  await revalidateCollectionCaches({ slug: updated.slug });
+  const reval = await revalidateCollectionCaches({ slug: updated.slug, type: "update" });
 
   return {
     success: true,
     message: "Collection cover image replaced successfully.",
+    warning: reval.warning,
     data: { storagePath: newStoragePath, updatedAt: updated.updated_at },
   };
 }
@@ -763,11 +770,12 @@ export async function removeCollectionCoverAction(
     await supabase.storage.from("product-media").remove([oldStoragePath]);
   }
 
-  await revalidateCollectionCaches({ slug: updated.slug });
+  const reval = await revalidateCollectionCaches({ slug: updated.slug, type: "update" });
 
   return {
     success: true,
     message: "Collection cover image removed successfully.",
+    warning: reval.warning,
     data: { updatedAt: updated.updated_at },
   };
 }

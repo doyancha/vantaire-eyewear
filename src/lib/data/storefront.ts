@@ -9,8 +9,7 @@ import {
   OperationalSettings,
 } from "./mappers";
 import { getStorefrontDataSource, isStaticFallbackAllowed } from "./config";
-import { CACHE_TAGS, DEFAULT_CACHE_TTL } from "./cache";
-import { unstable_cache } from "next/cache";
+import { CACHE_TAGS, DEFAULT_CACHE_TTL, createCachedStorefrontFunction } from "./cache";
 
 // =============================================================================
 // 1. DETERMINISTIC RELATED PRODUCTS SCORING ALGORITHM
@@ -165,67 +164,43 @@ async function fetchSupabaseSiteSettings(): Promise<OperationalSettings> {
 }
 
 // =============================================================================
-// 3. CACHED SUPABASE FUNCTIONS (NEXT.JS unstable_cache WITH ISOMORPHIC FALLBACK)
+// 3. CACHED SUPABASE FUNCTIONS (CANONICAL NEXT.JS unstable_cache WRAPPER)
 // =============================================================================
-function safeCache<T extends (...args: any[]) => Promise<any>>(
-  fn: T,
-  parts: string[],
-  options?: { tags?: string[]; revalidate?: number | false }
-): T {
-  try {
-    const cached = unstable_cache(fn, parts, options);
-    return (async (...args: any[]) => {
-      try {
-        return await cached(...args);
-      } catch (err: any) {
-        if (
-          err?.message?.includes("incrementalCache missing") ||
-          err?.message?.includes("Invariant")
-        ) {
-          return await fn(...args);
-        }
-        throw err;
-      }
-    }) as T;
-  } catch {
-    return fn;
-  }
-}
 
-const getCachedSupabaseProducts = safeCache(
+const getCachedSupabaseProducts = createCachedStorefrontFunction(
   fetchSupabaseProducts,
   ["vantaire-storefront-products"],
   { tags: [CACHE_TAGS.products], revalidate: DEFAULT_CACHE_TTL }
 );
 
 const getCachedSupabaseProductBySlug = (slug: string) =>
-  safeCache(
+  createCachedStorefrontFunction(
     () => fetchSupabaseProductBySlug(slug),
     ["vantaire-storefront-product", slug],
     { tags: [CACHE_TAGS.products, CACHE_TAGS.product(slug)], revalidate: DEFAULT_CACHE_TTL }
   )();
 
-const getCachedSupabaseCollections = safeCache(
+const getCachedSupabaseCollections = createCachedStorefrontFunction(
   fetchSupabaseCollections,
   ["vantaire-storefront-collections"],
   { tags: [CACHE_TAGS.collections], revalidate: DEFAULT_CACHE_TTL }
 );
 
 const getCachedSupabaseCollectionBySlug = (slug: string) =>
-  safeCache(
+  createCachedStorefrontFunction(
     () => fetchSupabaseCollectionBySlug(slug),
     ["vantaire-storefront-collection", slug],
     { tags: [CACHE_TAGS.collections, CACHE_TAGS.collection(slug)], revalidate: DEFAULT_CACHE_TTL }
   )();
 
 const getCachedSupabaseProductsByCollection = (slug: string) =>
-  safeCache(
+  createCachedStorefrontFunction(
     () => fetchSupabaseProductsByCollection(slug),
     ["vantaire-storefront-products-collection", slug],
     { tags: [CACHE_TAGS.products, CACHE_TAGS.collection(slug)], revalidate: DEFAULT_CACHE_TTL }
   )();
 
-const getCachedSupabaseSiteSettings = safeCache(
+const getCachedSupabaseSiteSettings = createCachedStorefrontFunction(
   fetchSupabaseSiteSettings,
   ["vantaire-storefront-settings"],
   { tags: [CACHE_TAGS.siteSettings], revalidate: DEFAULT_CACHE_TTL }

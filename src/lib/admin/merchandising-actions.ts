@@ -95,11 +95,12 @@ export async function updateProductMerchandisingAction(
   }
 
   // 5. Revalidate affected surfaces
-  await revalidateMerchandisingCaches({ productSlug: updated.slug });
+  const reval = await revalidateMerchandisingCaches({ productSlug: updated.slug });
 
   return {
     success: true,
     message: `Merchandising updated for "${updated.name}".`,
+    warning: reval.warning,
     data: updated,
   };
 }
@@ -147,13 +148,14 @@ export async function reorderProductsAction(
     };
   }
 
-  await revalidateMerchandisingCaches({ reorderedProducts: true });
+  const reval = await revalidateMerchandisingCaches({ reorderedProducts: true });
 
   const total = rpcRes?.[0]?.total_reordered ?? desiredIds.length;
 
   return {
     success: true,
     message: `Successfully reordered ${total} products.`,
+    warning: reval.warning,
     data: {
       success: rpcRes?.[0]?.success ?? true,
       totalReordered: total,
@@ -162,7 +164,7 @@ export async function reorderProductsAction(
 }
 
 /**
- * Server Action: Atomically reorder collections
+ * Server Action: Atomically reorder catalog collections
  * Invokes public.reorder_collections RPC under transaction advisory lock
  * with complete set validation and snapshot concurrency protection.
  */
@@ -204,13 +206,14 @@ export async function reorderCollectionsAction(
     };
   }
 
-  await revalidateMerchandisingCaches({ reorderedCollections: true });
+  const reval = await revalidateMerchandisingCaches({ reorderedCollections: true });
 
   const total = rpcRes?.[0]?.total_reordered ?? desiredIds.length;
 
   return {
     success: true,
     message: `Successfully reordered ${total} collections.`,
+    warning: reval.warning,
     data: {
       success: rpcRes?.[0]?.success ?? true,
       totalReordered: total,

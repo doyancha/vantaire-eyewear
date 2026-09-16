@@ -1,80 +1,93 @@
-import { revalidatePath, revalidateTag } from "next/cache";
-import { CACHE_TAGS } from "@/lib/data/cache";
+import {
+  buildInvalidationPlan,
+  applyInvalidationPlan,
+  type MutationEvent,
+  type InvalidationResult,
+} from "@/lib/cache/invalidation";
+
+export { buildInvalidationPlan, applyInvalidationPlan };
+export type { MutationEvent, InvalidationResult };
 
 interface RevalidateProductOptions {
   slug?: string;
+  oldSlug?: string;
   collectionSlugs?: string[];
+  type?: "create" | "update" | "lifecycle";
 }
 
 /**
  * Revalidates public storefront and admin cache tags and paths following a product mutation.
- * Safe to call from server actions. Gracefully catches errors in non-HTTP/test execution contexts.
+ * Safe to call from server actions. Gracefully catches notices in isolated execution contexts.
  */
-export async function revalidateProductCaches(options: RevalidateProductOptions = {}) {
-  try {
-    // 1. Global product and merchandising tags
-    revalidateTag(CACHE_TAGS.products);
-    revalidateTag(CACHE_TAGS.merchandising);
+export async function revalidateProductCaches(
+  options: RevalidateProductOptions = {}
+): Promise<InvalidationResult> {
+  const event: MutationEvent =
+    options.type === "create"
+      ? {
+          type: "product_created",
+          slug: options.slug || "",
+          collectionSlugs: options.collectionSlugs,
+        }
+      : options.type === "lifecycle"
+      ? {
+          type: "product_lifecycle",
+          slug: options.slug || "",
+          collectionSlugs: options.collectionSlugs,
+        }
+      : {
+          type: "product_updated",
+          slug: options.slug || "",
+          oldSlug: options.oldSlug,
+          collectionSlugs: options.collectionSlugs,
+        };
 
-    // 2. Specific product tag and detail route
-    if (options.slug) {
-      revalidateTag(CACHE_TAGS.product(options.slug));
-      revalidatePath(`/products/${options.slug}`);
-    }
-
-    // 3. Related collection tags and listing routes
-    if (options.collectionSlugs && options.collectionSlugs.length > 0) {
-      for (const colSlug of options.collectionSlugs) {
-        revalidateTag(CACHE_TAGS.collection(colSlug));
-        revalidatePath(`/collections/${colSlug}`);
-      }
-    }
-
-    // 4. Storefront dynamic listings and sitemap
-    revalidatePath("/shop");
-    revalidatePath("/collections");
-    revalidatePath("/");
-    revalidatePath("/sitemap.xml");
-
-    // 5. Admin backoffice listings
-    revalidatePath("/admin/products");
-    revalidatePath("/admin");
-  } catch (err) {
-    // In headless test scripts or isolated execution where Next.js cache context isn't active
-    console.warn("[revalidateProductCaches] Cache revalidation notice:", err);
-  }
+  const plan = buildInvalidationPlan(event);
+  return applyInvalidationPlan(plan);
 }
 
 interface RevalidateCollectionOptions {
   slug?: string;
+  oldSlug?: string;
+  type?: "create" | "update" | "lifecycle" | "membership";
+  affectedProductSlugs?: string[];
 }
 
 /**
  * Revalidates public storefront and admin cache tags and paths following a collection mutation.
+ * Guarantees cross-module invalidation on products when membership or lifecycle changes.
  */
-export async function revalidateCollectionCaches(options: RevalidateCollectionOptions = {}) {
-  try {
-    // 1. Global collection tag
-    revalidateTag(CACHE_TAGS.collections);
+export async function revalidateCollectionCaches(
+  options: RevalidateCollectionOptions = {}
+): Promise<InvalidationResult> {
+  let event: MutationEvent;
 
-    // 2. Specific collection tag and route
-    if (options.slug) {
-      revalidateTag(CACHE_TAGS.collection(options.slug));
-      revalidatePath(`/collections/${options.slug}`);
-    }
-
-    // 3. Storefront navigation, listings, and sitemap
-    revalidatePath("/collections");
-    revalidatePath("/shop");
-    revalidatePath("/");
-    revalidatePath("/sitemap.xml");
-
-    // 4. Admin backoffice listings
-    revalidatePath("/admin/collections");
-    revalidatePath("/admin");
-  } catch (err) {
-    console.warn("[revalidateCollectionCaches] Cache revalidation notice:", err);
+  if (options.type === "create") {
+    event = {
+      type: "collection_created",
+      slug: options.slug || "",
+    };
+  } else if (options.type === "lifecycle") {
+    event = {
+      type: "collection_lifecycle",
+      slug: options.slug || "",
+    };
+  } else if (options.type === "membership") {
+    event = {
+      type: "collection_membership_updated",
+      slug: options.slug || "",
+      affectedProductSlugs: options.affectedProductSlugs,
+    };
+  } else {
+    event = {
+      type: "collection_updated",
+      slug: options.slug || "",
+      oldSlug: options.oldSlug,
+    };
   }
+
+  const plan = buildInvalidationPlan(event);
+  return applyInvalidationPlan(plan);
 }
 
 interface RevalidateMerchandisingOptions {
@@ -88,64 +101,43 @@ interface RevalidateMerchandisingOptions {
  * Revalidates public storefront and admin cache tags and paths following merchandising modifications
  * (flag changes, product global reordering, or collection global reordering).
  */
-export async function revalidateMerchandisingCaches(options: RevalidateMerchandisingOptions = {}) {
-  try {
-    // 1. Global merchandising and product tags
-    revalidateTag(CACHE_TAGS.merchandising);
-    revalidateTag(CACHE_TAGS.products);
-
-    if (options.reorderedCollections || options.collectionSlug) {
-      revalidateTag(CACHE_TAGS.collections);
-    }
-
-    if (options.productSlug) {
-      revalidateTag(CACHE_TAGS.product(options.productSlug));
-      revalidatePath(`/products/${options.productSlug}`);
-    }
-
-    if (options.collectionSlug) {
-      revalidateTag(CACHE_TAGS.collection(options.collectionSlug));
-      revalidatePath(`/collections/${options.collectionSlug}`);
-    }
-
-    // 2. Public storefront surfaces affected by merchandising & ordering
-    revalidatePath("/");
-    revalidatePath("/shop");
-    revalidatePath("/collections");
-    revalidatePath("/sitemap.xml");
-
-    // 3. Admin backoffice surfaces
-    revalidatePath("/admin/merchandising");
-    revalidatePath("/admin/products");
-    revalidatePath("/admin/collections");
-    revalidatePath("/admin");
-  } catch (err) {
-    console.warn("[revalidateMerchandisingCaches] Cache revalidation notice:", err);
+export async function revalidateMerchandisingCaches(
+  options: RevalidateMerchandisingOptions = {}
+): Promise<InvalidationResult> {
+  if (options.reorderedCollections) {
+    const plan = buildInvalidationPlan({ type: "collection_reordered" });
+    return applyInvalidationPlan(plan);
   }
+
+  if (options.reorderedProducts) {
+    const plan = buildInvalidationPlan({ type: "product_reordered" });
+    return applyInvalidationPlan(plan);
+  }
+
+  if (options.productSlug) {
+    const plan = buildInvalidationPlan({
+      type: "product_flags_updated",
+      slug: options.productSlug,
+    });
+    return applyInvalidationPlan(plan);
+  }
+
+  if (options.collectionSlug) {
+    const plan = buildInvalidationPlan({
+      type: "collection_updated",
+      slug: options.collectionSlug,
+    });
+    return applyInvalidationPlan(plan);
+  }
+
+  const plan = buildInvalidationPlan({ type: "product_reordered" });
+  return applyInvalidationPlan(plan);
 }
 
 /**
  * Revalidates public storefront and admin surfaces following site settings mutations.
  */
-export async function revalidateSiteSettingsCaches() {
-  try {
-    // 1. Invalidate site-settings cache tag
-    revalidateTag(CACHE_TAGS.siteSettings);
-
-    // 2. Public storefront surfaces that consume operational configuration
-    revalidatePath("/");
-    revalidatePath("/contact");
-    revalidatePath("/shipping");
-    revalidatePath("/faq");
-    revalidatePath("/returns");
-    revalidatePath("/shop");
-    revalidatePath("/collections");
-    revalidatePath("/sitemap.xml");
-
-    // 3. Admin backoffice surfaces
-    revalidatePath("/admin/settings");
-    revalidatePath("/admin");
-  } catch (err) {
-    console.warn("[revalidateSiteSettingsCaches] Cache revalidation notice:", err);
-  }
+export async function revalidateSiteSettingsCaches(): Promise<InvalidationResult> {
+  const plan = buildInvalidationPlan({ type: "site_settings_updated" });
+  return applyInvalidationPlan(plan);
 }

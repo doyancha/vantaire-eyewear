@@ -146,7 +146,7 @@ export default async function HomePage() {
             </div>
             <h3 className="font-serif text-xl text-vantaire-warmWhite">Sun Tint Optics</h3>
             <p className="text-xs text-vantaire-muted font-sans leading-relaxed">
-              Designed with balanced solar filtration to reduce radiation fatigue and preserve visual comfort under bright sunlight.
+              Designed with balanced solar filtration to reduce harsh glare and preserve visual comfort under bright sunlight.
             </p>
           </div>
 

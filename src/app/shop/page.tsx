@@ -5,7 +5,7 @@ import { ShopCatalogClient } from "./ShopCatalogClient";
 export const metadata: Metadata = {
   title: "Shop All Sunglasses | Architectural Luxury Eyewear",
   description:
-    "Explore the complete collection of VANTAIRE eyewear. Handcrafted luxury acetate and titanium sunglasses engineered with precision.",
+    "Explore the complete VANTAIRE sunglasses collection, featuring architectural silhouettes and modern sun-tinted styling.",
 };
 
 export default async function ShopPage() {

@@ -1,15 +1,20 @@
 import { MetadataRoute } from "next";
-import { getProducts, getCollections, getSiteSettings } from "@/lib/data/storefront";
+import { getProducts, getCollections } from "@/lib/data/storefront";
 import { siteConfig } from "@/lib/config";
 
+/**
+ * Dynamic Sitemap Generator
+ * -----------------------------------------------------------------------------
+ * Decoupled from site_settings to prevent unnecessary dynamic dependency cycles.
+ * Site URL is derived statically from canonical configuration/environment.
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, collections, settings] = await Promise.all([
+  const [products, collections] = await Promise.all([
     getProducts(),
     getCollections(),
-    getSiteSettings(),
   ]);
 
-  const baseUrl = settings.siteUrl || siteConfig.siteUrl;
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || siteConfig.siteUrl;
 
   const productRoutes = products.map((product) => ({
     url: `${baseUrl}/products/${product.slug}`,

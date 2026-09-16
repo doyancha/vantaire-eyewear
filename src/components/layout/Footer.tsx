@@ -3,14 +3,17 @@ import { Wordmark } from "@/components/ui/Wordmark";
 import { siteConfig } from "@/lib/config";
 import { MessageCircle, ShieldCheck, Truck, RefreshCw, Sparkles } from "lucide-react";
 import { buildGeneralWhatsAppUrl } from "@/lib/whatsapp";
-
+import { COLLECTIONS_META } from "@/data/products";
 import type { OperationalSettings } from "@/lib/data/mappers";
+import type { CollectionMeta } from "@/types/catalog";
 
 interface FooterProps {
   settings?: OperationalSettings;
+  collections?: CollectionMeta[];
 }
 
-export function Footer({ settings }: FooterProps) {
+export function Footer({ settings, collections }: FooterProps) {
+  const navCollections = collections && collections.length > 0 ? collections : COLLECTIONS_META;
   const insideDhakaTime = settings?.delivery.insideDhakaTime ?? siteConfig.delivery.insideDhakaTime;
   const outsideDhakaTime = settings?.delivery.outsideDhakaTime ?? siteConfig.delivery.outsideDhakaTime;
   const displayNumber = settings?.whatsapp.displayNumber ?? siteConfig.whatsapp.displayNumber;
@@ -112,36 +115,16 @@ export function Footer({ settings }: FooterProps) {
                 All Sunglasses
               </Link>
             </li>
-            <li>
-              <Link href="/collections/aviator" className="hover:text-vantaire-champagne transition-colors">
-                Aviator Silhouette
-              </Link>
-            </li>
-            <li>
-              <Link href="/collections/square" className="hover:text-vantaire-champagne transition-colors">
-                Sculpted Square
-              </Link>
-            </li>
-            <li>
-              <Link href="/collections/round" className="hover:text-vantaire-champagne transition-colors">
-                Pantoscopic Round
-              </Link>
-            </li>
-            <li>
-              <Link href="/collections/cat-eye" className="hover:text-vantaire-champagne transition-colors">
-                Verona Cat-Eye
-              </Link>
-            </li>
-            <li>
-              <Link href="/collections/polarized" className="hover:text-vantaire-champagne transition-colors">
-                Polarized Optics
-              </Link>
-            </li>
-            <li>
-              <Link href="/collections/sport" className="hover:text-vantaire-champagne transition-colors">
-                Velocity Sport
-              </Link>
-            </li>
+            {navCollections.map((col) => (
+              <li key={col.slug}>
+                <Link
+                  href={`/collections/${col.slug}`}
+                  className="hover:text-vantaire-champagne transition-colors"
+                >
+                  {col.name}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 
