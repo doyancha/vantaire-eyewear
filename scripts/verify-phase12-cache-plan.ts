@@ -45,25 +45,43 @@ assert(CACHE_TAGS.siteSettings === "site-settings", "CACHE_TAGS.siteSettings equ
 assert(CACHE_TAGS.product("apex") === "product:apex", "CACHE_TAGS.product('apex') generates product:apex");
 assert(CACHE_TAGS.collection("aviator") === "collection:aviator", "CACHE_TAGS.collection('aviator') generates collection:aviator");
 
-// 2. Product Created Event
+// 2. Product Created Event (Active vs Inactive)
 console.log("\n2. TESTING product_created EVENT");
-const pCreated = buildInvalidationPlan({
+// Active product creation
+const pCreatedActive = buildInvalidationPlan({
   type: "product_created",
   slug: "vantaire-x1",
   collectionSlugs: ["aviator", "square"],
+  isActive: true,
 });
-assert(pCreated.tags.includes("products"), "Tags include 'products'");
-assert(pCreated.tags.includes("product:vantaire-x1"), "Tags include product tag");
-assert(pCreated.tags.includes("collection:aviator"), "Tags include collection:aviator");
-assert(pCreated.tags.includes("collection:square"), "Tags include collection:square");
-assert(pCreated.paths.includes("/products/vantaire-x1"), "Paths include /products/vantaire-x1");
-assert(pCreated.paths.includes("/collections/aviator"), "Paths include /collections/aviator");
-assert(pCreated.paths.includes("/shop"), "Paths include /shop");
-assert(pCreated.paths.includes("/sitemap.xml"), "Paths include /sitemap.xml");
-assert(isSorted(pCreated.tags), "Tags are deterministically sorted");
-assert(isSorted(pCreated.paths), "Paths are deterministically sorted");
-assert(isDeduplicated(pCreated.tags), "Tags are deduplicated");
-assert(isDeduplicated(pCreated.paths), "Paths are deduplicated");
+assert(pCreatedActive.tags.includes("products"), "Active: Tags include 'products'");
+assert(pCreatedActive.tags.includes("product:vantaire-x1"), "Active: Tags include product tag");
+assert(pCreatedActive.tags.includes("collection:aviator"), "Active: Tags include collection:aviator");
+assert(pCreatedActive.tags.includes("collection:square"), "Active: Tags include collection:square");
+assert(pCreatedActive.paths.includes("/products/vantaire-x1"), "Active: Paths include /products/vantaire-x1");
+assert(pCreatedActive.paths.includes("/collections/aviator"), "Active: Paths include /collections/aviator");
+assert(pCreatedActive.paths.includes("/shop"), "Active: Paths include /shop");
+assert(pCreatedActive.paths.includes("/sitemap.xml"), "Active: Paths include /sitemap.xml");
+assert(isSorted(pCreatedActive.tags), "Tags are deterministically sorted");
+assert(isSorted(pCreatedActive.paths), "Paths are deterministically sorted");
+assert(isDeduplicated(pCreatedActive.tags), "Tags are deduplicated");
+assert(isDeduplicated(pCreatedActive.paths), "Paths are deduplicated");
+
+// Inactive draft product creation (0 public tags, 0 public paths)
+const pCreatedInactive = buildInvalidationPlan({
+  type: "product_created",
+  slug: "vantaire-draft",
+  collectionSlugs: ["aviator"],
+  isActive: false,
+});
+assert(pCreatedInactive.tags.length === 0, "Inactive: Exactly 0 public cache tags");
+assert(!pCreatedInactive.paths.includes("/"), "Inactive: Does not include /");
+assert(!pCreatedInactive.paths.includes("/shop"), "Inactive: Does not include /shop");
+assert(!pCreatedInactive.paths.includes("/collections"), "Inactive: Does not include /collections");
+assert(!pCreatedInactive.paths.includes("/sitemap.xml"), "Inactive: Does not include /sitemap.xml");
+assert(!pCreatedInactive.paths.includes("/products/vantaire-draft"), "Inactive: Does not include /products/vantaire-draft");
+assert(pCreatedInactive.paths.includes("/admin"), "Inactive: Includes /admin");
+assert(pCreatedInactive.paths.includes("/admin/products"), "Inactive: Includes /admin/products");
 
 // 3. Product Updated Event
 console.log("\n3. TESTING product_updated EVENT");
@@ -72,6 +90,7 @@ const pUpdated = buildInvalidationPlan({
   slug: "vantaire-x2",
   oldSlug: "vantaire-x1",
   collectionSlugs: ["aviator"],
+  isActive: true,
 });
 assert(pUpdated.tags.includes("products"), "Tags include 'products'");
 assert(pUpdated.tags.includes("product:vantaire-x2"), "Tags include product:vantaire-x2");
@@ -79,6 +98,17 @@ assert(pUpdated.tags.includes("product:vantaire-x1"), "Tags include old slug pro
 assert(pUpdated.paths.includes("/products/vantaire-x2"), "Paths include /products/vantaire-x2");
 assert(pUpdated.paths.includes("/products/vantaire-x1"), "Paths include /products/vantaire-x1");
 assert(pUpdated.paths.includes("/admin/merchandising"), "Paths include /admin/merchandising");
+assert(!pUpdated.paths.includes("/sitemap.xml"), "Precision: Product update does NOT invalidate sitemap");
+
+// Inactive product update
+const pUpdatedInactive = buildInvalidationPlan({
+  type: "product_updated",
+  slug: "vantaire-inactive",
+  isActive: false,
+});
+assert(pUpdatedInactive.tags.length === 0, "Inactive update: 0 public tags");
+assert(!pUpdatedInactive.paths.includes("/shop"), "Inactive update: 0 public paths");
+assert(pUpdatedInactive.paths.includes("/admin/products"), "Inactive update: includes /admin/products");
 
 // 4. Product Lifecycle Event (archive/restore)
 console.log("\n4. TESTING product_lifecycle EVENT");
@@ -90,6 +120,7 @@ const pLifecycle = buildInvalidationPlan({
 assert(pLifecycle.tags.includes("products"), "Tags include 'products'");
 assert(pLifecycle.tags.includes("product:vantaire-x1"), "Tags include product tag");
 assert(pLifecycle.paths.includes("/products/vantaire-x1"), "Paths include product detail");
+assert(pLifecycle.paths.includes("/sitemap.xml"), "Lifecycle: MUST invalidate /sitemap.xml");
 
 // 5. Product Media Updated Event
 console.log("\n5. TESTING product_media_updated EVENT");
@@ -102,6 +133,7 @@ assert(pMedia.tags.includes("products"), "Tags include 'products'");
 assert(pMedia.tags.includes("product:vantaire-x1"), "Tags include product tag");
 assert(pMedia.paths.includes("/admin/products/prod-123/media"), "Paths include product media admin path");
 assert(pMedia.paths.includes("/admin/media"), "Paths include /admin/media");
+assert(!pMedia.paths.includes("/sitemap.xml"), "Precision: Media update does NOT invalidate sitemap");
 
 // 6. Product Reordered & Flags Updated Events
 console.log("\n6. TESTING MERCHANDISING EVENTS");
@@ -110,10 +142,12 @@ assert(pReorder.tags.includes("products"), "Product reorder invalidates 'product
 assert(!pReorder.tags.includes("merchandising"), "Dead 'merchandising' tag not present");
 assert(pReorder.paths.includes("/shop"), "Product reorder invalidates /shop");
 assert(pReorder.paths.includes("/admin/merchandising"), "Product reorder invalidates /admin/merchandising");
+assert(!pReorder.paths.includes("/sitemap.xml"), "Precision: Product reorder does NOT invalidate sitemap");
 
 const pFlags = buildInvalidationPlan({ type: "product_flags_updated", slug: "vantaire-x1" });
 assert(pFlags.tags.includes("products"), "Flags update invalidates 'products'");
 assert(pFlags.tags.includes("product:vantaire-x1"), "Flags update invalidates specific product tag");
+assert(!pFlags.paths.includes("/sitemap.xml"), "Precision: Flags update does NOT invalidate sitemap");
 
 // 7. Collection Lifecycle & Cross-Module Invalidation
 console.log("\n7. TESTING CROSS-MODULE INVALIDATION ON COLLECTION LIFECYCLE");
@@ -127,6 +161,7 @@ assert(
   cLifecycle.tags.includes("products"),
   "CROSS-MODULE: Collection lifecycle MUST invalidate 'products' tag"
 );
+assert(cLifecycle.paths.includes("/sitemap.xml"), "Lifecycle: Collection lifecycle MUST invalidate /sitemap.xml");
 
 // 8. Collection Membership & Cross-Module Invalidation
 console.log("\n8. TESTING CROSS-MODULE INVALIDATION ON COLLECTION MEMBERSHIP");
@@ -144,22 +179,77 @@ assert(
 assert(cMembership.tags.includes("product:vantaire-x1"), "Tags include affected product vantaire-x1");
 assert(cMembership.tags.includes("product:vantaire-x2"), "Tags include affected product vantaire-x2");
 assert(cMembership.paths.includes("/products/vantaire-x1"), "Paths include /products/vantaire-x1");
+assert(!cMembership.paths.includes("/sitemap.xml"), "Precision: Membership change does NOT invalidate sitemap");
 
-// 9. Site Settings Updated Event
-console.log("\n9. TESTING site_settings_updated EVENT");
+// 9. Collection Created & Cover Updated Events
+console.log("\n9. TESTING COLLECTION CREATED & COVER UPDATED EVENTS");
+const cCreatedInactive = buildInvalidationPlan({
+  type: "collection_created",
+  slug: "retro",
+  isActive: false,
+});
+assert(cCreatedInactive.tags.length === 0, "Inactive collection create: Exactly 0 public tags");
+assert(!cCreatedInactive.paths.includes("/"), "Inactive collection create: No public / path");
+assert(!cCreatedInactive.paths.includes("/collections"), "Inactive collection create: No public /collections path");
+assert(cCreatedInactive.paths.includes("/admin/collections"), "Inactive collection create: Includes admin path");
+
+const cCover = buildInvalidationPlan({
+  type: "collection_cover_updated",
+  slug: "aviator",
+});
+assert(cCover.tags.includes("collections"), "Cover: invalidates 'collections'");
+assert(cCover.tags.includes("collection:aviator"), "Cover: invalidates 'collection:aviator'");
+assert(!cCover.tags.includes("products"), "Precision: Cover update does NOT invalidate 'products' tag");
+assert(!cCover.paths.includes("/sitemap.xml"), "Precision: Cover update does NOT invalidate sitemap");
+assert(!cCover.paths.includes("/shop"), "Precision: Cover update does NOT invalidate /shop");
+
+const cReorder = buildInvalidationPlan({ type: "collection_reordered" });
+assert(cReorder.tags.includes("collections"), "Collection reorder invalidates 'collections'");
+assert(!cReorder.paths.includes("/sitemap.xml"), "Precision: Collection reorder does NOT invalidate sitemap");
+
+// 10. Site Settings Updated Event
+console.log("\n10. TESTING site_settings_updated EVENT");
 const sUpdated = buildInvalidationPlan({ type: "site_settings_updated" });
 assert(sUpdated.tags.includes("site-settings"), "Tags include 'site-settings'");
 assert(sUpdated.paths.includes("/contact"), "Paths include /contact");
 assert(sUpdated.paths.includes("/shipping"), "Paths include /shipping");
 assert(sUpdated.paths.includes("/faq"), "Paths include /faq");
 assert(sUpdated.paths.includes("/returns"), "Paths include /returns");
-assert(sUpdated.paths.includes("/sitemap.xml"), "Paths include /sitemap.xml");
+assert(!sUpdated.paths.includes("/sitemap.xml"), "Precision: Site settings update does NOT invalidate sitemap");
 
-// 10. Execution in isolated/headless context
-console.log("\n10. TESTING applyInvalidationPlan EXECUTION");
-const execRes = applyInvalidationPlan(cMembership);
-assert(typeof execRes.success === "boolean", "applyInvalidationPlan returns structured InvalidationResult");
-console.log(`  ✓ Notice handled safely: ${execRes.warning || "None (clean execution)"}`);
+// 11. Execution & Failure Contract Testing
+console.log("\n11. TESTING applyInvalidationPlan FAILURE CONTRACT & EXECUTION");
+
+// 11a. Test successful execution via dependency injection
+const mockSuccessResult = applyInvalidationPlan(cCover, {
+  tagRevalidator: () => {},
+  pathRevalidator: () => {},
+});
+assert(mockSuccessResult.success === true, "Mock revalidator success produces success === true");
+assert(mockSuccessResult.warning === undefined, "Mock revalidator success produces no warning");
+assert(mockSuccessResult.revalidatedTags.length === cCover.tags.length, "All tags recorded as revalidated");
+assert(mockSuccessResult.revalidatedPaths.length === cCover.paths.length, "All paths recorded as revalidated");
+
+// 11b. Test failure contract: simulated revalidation failure must truthfully surface in InvalidationResult
+const mockFailureResult = applyInvalidationPlan(cCover, {
+  tagRevalidator: (tag) => {
+    if (tag === "collections") throw new Error("Simulated tag failure: collections");
+  },
+  pathRevalidator: () => {},
+});
+assert(mockFailureResult.success === false, "Failed tag revalidation produces success === false");
+assert(mockFailureResult.warning !== undefined, "Failure produces truthful warning message");
+assert(
+  mockFailureResult.warning?.includes("Simulated tag failure: collections") === true,
+  "Warning contains specific error message"
+);
+
+// 11c. Test headless / isolated execution fallback
+const headlessResult = applyInvalidationPlan(cCover);
+// In headless tsx, Next.js revalidateTag throws Invariant static generation store missing.
+// applyInvalidationPlan must catch this without throwing an unhandled exception.
+assert(typeof headlessResult.success === "boolean", "Headless execution handled without throwing");
+assert(headlessResult.warning !== undefined, "Headless execution produces expected context notice warning");
 
 console.log("\n=======================================================");
 console.log("  ALL PHASE 12 CACHE PLAN UNIT TESTS PASSED");

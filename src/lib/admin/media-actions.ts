@@ -155,10 +155,16 @@ export async function uploadProductImageAction(
     })
   );
 
+  const warningMsg = !reval.success
+    ? (reval.warning || "Some public caches could not be refreshed immediately; stale data may persist briefly.")
+    : reval.warning;
+
   return {
     success: true,
-    message: "Image uploaded and cataloged successfully.",
-    warning: reval.warning,
+    message: !reval.success
+      ? "Image uploaded and cataloged, but cache refresh was incomplete."
+      : "Image uploaded and cataloged successfully.",
+    warning: warningMsg,
     data: inserted as Tables<"product_images">,
   };
 }
@@ -199,16 +205,21 @@ export async function replaceProductImageAction(
     return { success: false, message: "Image record not found." };
   }
 
-  const parentProduct = currentImage.products as { slug: string } | null;
-  const slug = parentProduct?.slug;
-  if (!slug) {
-    return { success: false, message: "Parent product slug could not be determined." };
+  const slug = (currentImage.products as any)?.slug || "unassigned";
+
+  // Validate alt text if provided
+  let finalAlt = currentImage.alt_text;
+  if (altText !== null && altText !== undefined) {
+    const altCheck = validateAltText(altText);
+    if (!altCheck.success) {
+      return { success: false, message: altCheck.error };
+    }
+    finalAlt = altCheck.value;
   }
 
-  // Validate File Buffer & Magic Bytes
+  // Validate file
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-
   const validation = validateImageUpload(buffer, file.type);
   if (!validation.success) {
     return { success: false, message: validation.error };
@@ -217,17 +228,7 @@ export async function replaceProductImageAction(
   const { info } = validation;
   const newStoragePath = buildProductStoragePath(slug, info.sha256Prefix16, info.extension);
 
-  // Validate new alt text if provided
-  let finalAlt = currentImage.alt_text;
-  if (altText && altText.trim().length > 0) {
-    const altCheck = validateAltText(altText);
-    if (!altCheck.success) {
-      return { success: false, message: altCheck.error };
-    }
-    finalAlt = altCheck.value;
-  }
-
-  // Upload new image to Storage
+  // Upload replacement file
   const { error: uploadErr } = await supabase.storage
     .from("product-media")
     .upload(newStoragePath, buffer, {
@@ -282,10 +283,16 @@ export async function replaceProductImageAction(
     })
   );
 
+  const replaceWarningMsg = !reval.success
+    ? (reval.warning || "Some public caches could not be refreshed immediately; stale data may persist briefly.")
+    : reval.warning;
+
   return {
     success: true,
-    message: "Image replaced successfully.",
-    warning: reval.warning,
+    message: !reval.success
+      ? "Image replaced, but cache refresh was incomplete."
+      : "Image replaced successfully.",
+    warning: replaceWarningMsg,
     data: updated as Tables<"product_images">,
   };
 }
@@ -319,7 +326,17 @@ export async function setPrimaryImageAction(
     })
   );
 
-  return { success: true, message: "Primary image updated successfully.", warning: reval.warning };
+  const primaryWarning = !reval.success
+    ? (reval.warning || "Some public caches could not be refreshed immediately; stale data may persist briefly.")
+    : reval.warning;
+
+  return {
+    success: true,
+    message: !reval.success
+      ? "Primary image updated, but cache refresh was incomplete."
+      : "Primary image updated successfully.",
+    warning: primaryWarning,
+  };
 }
 
 /**
@@ -351,7 +368,17 @@ export async function reorderProductImagesAction(
     })
   );
 
-  return { success: true, message: "Image order updated successfully.", warning: reval.warning };
+  const reorderWarning = !reval.success
+    ? (reval.warning || "Some public caches could not be refreshed immediately; stale data may persist briefly.")
+    : reval.warning;
+
+  return {
+    success: true,
+    message: !reval.success
+      ? "Image order updated, but cache refresh was incomplete."
+      : "Image order updated successfully.",
+    warning: reorderWarning,
+  };
 }
 
 /**
@@ -396,10 +423,16 @@ export async function removeProductImageAction(
     })
   );
 
+  const removeWarning = !reval.success
+    ? (reval.warning || "Some public caches could not be refreshed immediately; stale data may persist briefly.")
+    : reval.warning;
+
   return {
     success: true,
-    message: "Image removed successfully.",
-    warning: reval.warning,
+    message: !reval.success
+      ? "Image removed, but cache refresh was incomplete."
+      : "Image removed successfully.",
+    warning: removeWarning,
     data: { deletedPath, promotedId },
   };
 }
@@ -438,7 +471,17 @@ export async function updateImageAltTextAction(
     })
   );
 
-  return { success: true, message: "Alt text updated successfully.", warning: reval.warning };
+  const altWarning = !reval.success
+    ? (reval.warning || "Some public caches could not be refreshed immediately; stale data may persist briefly.")
+    : reval.warning;
+
+  return {
+    success: true,
+    message: !reval.success
+      ? "Alt text updated, but cache refresh was incomplete."
+      : "Alt text updated successfully.",
+    warning: altWarning,
+  };
 }
 
 /**

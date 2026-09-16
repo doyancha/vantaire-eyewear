@@ -97,10 +97,16 @@ export async function updateProductMerchandisingAction(
   // 5. Revalidate affected surfaces
   const reval = await revalidateMerchandisingCaches({ productSlug: updated.slug });
 
+  const warningMsg = !reval.success
+    ? (reval.warning || "Some public caches could not be refreshed immediately; stale data may persist briefly.")
+    : reval.warning;
+
   return {
     success: true,
-    message: `Merchandising updated for "${updated.name}".`,
-    warning: reval.warning,
+    message: !reval.success
+      ? `Merchandising updated for "${updated.name}", but cache refresh was incomplete.`
+      : `Merchandising updated for "${updated.name}".`,
+    warning: warningMsg,
     data: updated,
   };
 }
@@ -152,10 +158,16 @@ export async function reorderProductsAction(
 
   const total = rpcRes?.[0]?.total_reordered ?? desiredIds.length;
 
+  const warningMsg = !reval.success
+    ? (reval.warning || "Some public caches could not be refreshed immediately; stale data may persist briefly.")
+    : reval.warning;
+
   return {
     success: true,
-    message: `Successfully reordered ${total} products.`,
-    warning: reval.warning,
+    message: !reval.success
+      ? `Successfully reordered ${total} products, but cache refresh was incomplete.`
+      : `Successfully reordered ${total} products.`,
+    warning: warningMsg,
     data: {
       success: rpcRes?.[0]?.success ?? true,
       totalReordered: total,
@@ -210,10 +222,16 @@ export async function reorderCollectionsAction(
 
   const total = rpcRes?.[0]?.total_reordered ?? desiredIds.length;
 
+  const colWarningMsg = !reval.success
+    ? (reval.warning || "Some public caches could not be refreshed immediately; stale data may persist briefly.")
+    : reval.warning;
+
   return {
     success: true,
-    message: `Successfully reordered ${total} collections.`,
-    warning: reval.warning,
+    message: !reval.success
+      ? `Successfully reordered ${total} collections, but cache refresh was incomplete.`
+      : `Successfully reordered ${total} collections.`,
+    warning: colWarningMsg,
     data: {
       success: rpcRes?.[0]?.success ?? true,
       totalReordered: total,

@@ -13,6 +13,7 @@ interface RevalidateProductOptions {
   oldSlug?: string;
   collectionSlugs?: string[];
   type?: "create" | "update" | "lifecycle";
+  isActive?: boolean;
 }
 
 /**
@@ -28,6 +29,7 @@ export async function revalidateProductCaches(
           type: "product_created",
           slug: options.slug || "",
           collectionSlugs: options.collectionSlugs,
+          isActive: options.isActive ?? false,
         }
       : options.type === "lifecycle"
       ? {
@@ -40,6 +42,7 @@ export async function revalidateProductCaches(
           slug: options.slug || "",
           oldSlug: options.oldSlug,
           collectionSlugs: options.collectionSlugs,
+          isActive: options.isActive ?? true,
         };
 
   const plan = buildInvalidationPlan(event);
@@ -49,7 +52,8 @@ export async function revalidateProductCaches(
 interface RevalidateCollectionOptions {
   slug?: string;
   oldSlug?: string;
-  type?: "create" | "update" | "lifecycle" | "membership";
+  type?: "create" | "update" | "lifecycle" | "membership" | "cover";
+  isActive?: boolean;
   affectedProductSlugs?: string[];
 }
 
@@ -65,6 +69,12 @@ export async function revalidateCollectionCaches(
   if (options.type === "create") {
     event = {
       type: "collection_created",
+      slug: options.slug || "",
+      isActive: options.isActive ?? false,
+    };
+  } else if (options.type === "cover") {
+    event = {
+      type: "collection_cover_updated",
       slug: options.slug || "",
     };
   } else if (options.type === "lifecycle") {
@@ -83,6 +93,7 @@ export async function revalidateCollectionCaches(
       type: "collection_updated",
       slug: options.slug || "",
       oldSlug: options.oldSlug,
+      isActive: options.isActive ?? true,
     };
   }
 

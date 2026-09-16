@@ -114,11 +114,13 @@ export async function createCollectionAction(
     };
   }
 
-  const reval = await revalidateCollectionCaches({ slug: data.slug, type: "create" });
+  const reval = await revalidateCollectionCaches({ slug: data.slug, type: "create", isActive: false });
 
   return {
     success: true,
-    message: `Collection draft '${data.name}' created successfully.`,
+    message: !reval.success
+      ? `Collection draft '${data.name}' created in database, but cache refresh incomplete: ${reval.warning}`
+      : `Collection draft '${data.name}' created successfully.`,
     warning: reval.warning,
     data,
   };
@@ -195,11 +197,13 @@ export async function updateCollectionAction(
     };
   }
 
-  const reval = await revalidateCollectionCaches({ slug: data.slug, type: "update" });
+  const reval = await revalidateCollectionCaches({ slug: data.slug, type: "update", isActive: data.is_active });
 
   return {
     success: true,
-    message: `Collection '${data.name}' updated successfully.`,
+    message: !reval.success
+      ? `Collection '${data.name}' updated in database, but cache refresh incomplete: ${reval.warning}`
+      : `Collection '${data.name}' updated successfully.`,
     warning: reval.warning,
     data,
   };
@@ -278,7 +282,9 @@ export async function archiveCollectionAction(
 
   return {
     success: true,
-    message: `Collection '${data.name}' archived successfully.`,
+    message: !reval.success
+      ? `Collection '${data.name}' archived in database, but cache refresh incomplete: ${reval.warning}`
+      : `Collection '${data.name}' archived successfully.`,
     warning: reval.warning,
     data,
   };
@@ -393,7 +399,9 @@ export async function restoreCollectionAction(
 
   return {
     success: true,
-    message: `Collection '${data.name}' published and restored successfully.`,
+    message: !reval.success
+      ? `Collection '${data.name}' restored in database, but cache refresh incomplete: ${reval.warning}`
+      : `Collection '${data.name}' published and restored successfully.`,
     warning: reval.warning,
     data,
   };
@@ -409,17 +417,18 @@ export async function saveCollectionMembershipAction(
   const supabase = await createClient();
 
   const payload = parseRawPayload(rawInput);
-  const parsed = saveCollectionMembershipSchema.safeParse(payload);
+  const parseResult = saveCollectionMembershipSchema.safeParse(payload);
 
-  if (!parsed.success) {
+  if (!parseResult.success) {
+    const fieldErrors = parseResult.error.flatten().fieldErrors;
     return {
       success: false,
-      message: "Invalid membership data provided.",
-      errors: parsed.error.flatten().fieldErrors,
+      message: "Please correct the errors in the form.",
+      errors: fieldErrors as Record<string, string[]>,
     };
   }
 
-  const validated = parsed.data;
+  const validated: SaveCollectionMembershipInput = parseResult.data;
 
   // Call the atomic transactional RPC
   const { data, error } = await supabase.rpc("set_collection_products", {
@@ -429,7 +438,11 @@ export async function saveCollectionMembershipAction(
   });
 
   if (error) {
-    if (error.message.includes("Conflict")) {
+    if (
+      error.message.includes("Conflict") ||
+      error.message.includes("concurrently") ||
+      error.message.includes("modified")
+    ) {
       return {
         success: false,
         conflict: true,
@@ -455,7 +468,9 @@ export async function saveCollectionMembershipAction(
 
   return {
     success: true,
-    message: `Assigned ${result?.member_count ?? validated.product_ids.length} products to collection successfully.`,
+    message: !reval.success
+      ? `Assigned ${result?.member_count ?? validated.product_ids.length} products in database, but cache refresh incomplete: ${reval.warning}`
+      : `Assigned ${result?.member_count ?? validated.product_ids.length} products to collection successfully.`,
     warning: reval.warning,
     data: {
       memberCount: result?.member_count ?? validated.product_ids.length,
@@ -564,11 +579,13 @@ export async function uploadCollectionCoverAction(
     };
   }
 
-  const reval = await revalidateCollectionCaches({ slug: updated.slug, type: "update" });
+  const reval = await revalidateCollectionCaches({ slug: updated.slug, type: "cover" });
 
   return {
     success: true,
-    message: "Collection cover image uploaded successfully.",
+    message: !reval.success
+      ? `Collection cover image uploaded to database, but cache refresh incomplete: ${reval.warning}`
+      : "Collection cover image uploaded successfully.",
     warning: reval.warning,
     data: { storagePath, updatedAt: updated.updated_at },
   };
@@ -690,11 +707,13 @@ export async function replaceCollectionCoverAction(
     }
   }
 
-  const reval = await revalidateCollectionCaches({ slug: updated.slug, type: "update" });
+  const reval = await revalidateCollectionCaches({ slug: updated.slug, type: "cover" });
 
   return {
     success: true,
-    message: "Collection cover image replaced successfully.",
+    message: !reval.success
+      ? `Collection cover image replaced in database, but cache refresh incomplete: ${reval.warning}`
+      : "Collection cover image replaced successfully.",
     warning: reval.warning,
     data: { storagePath: newStoragePath, updatedAt: updated.updated_at },
   };
@@ -770,11 +789,13 @@ export async function removeCollectionCoverAction(
     await supabase.storage.from("product-media").remove([oldStoragePath]);
   }
 
-  const reval = await revalidateCollectionCaches({ slug: updated.slug, type: "update" });
+  const reval = await revalidateCollectionCaches({ slug: updated.slug, type: "cover" });
 
   return {
     success: true,
-    message: "Collection cover image removed successfully.",
+    message: !reval.success
+      ? `Collection cover image removed from database, but cache refresh incomplete: ${reval.warning}`
+      : "Collection cover image removed successfully.",
     warning: reval.warning,
     data: { updatedAt: updated.updated_at },
   };

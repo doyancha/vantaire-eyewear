@@ -131,12 +131,14 @@ export async function createProductAction(
     };
   }
 
-  // 5. Revalidate cache tags and routes
-  const reval = await revalidateProductCaches({ slug: inserted.slug, type: "create" });
+  // 5. Revalidate cache tags and routes (draft created inactive -> 0 public flushes)
+  const reval = await revalidateProductCaches({ slug: inserted.slug, type: "create", isActive: false });
 
   return {
     success: true,
-    message: `Product "${inserted.name}" created successfully as an inactive draft (${inserted.legacy_id}).`,
+    message: !reval.success
+      ? `Product "${inserted.name}" created in database, but cache refresh incomplete: ${reval.warning}`
+      : `Product "${inserted.name}" created successfully as an inactive draft (${inserted.legacy_id}).`,
     warning: reval.warning,
     data: inserted,
   };
@@ -243,11 +245,14 @@ export async function updateProductAction(
   const reval = await revalidateProductCaches({
     slug: updated.slug,
     type: "update",
+    isActive: updated.is_active,
   });
 
   return {
     success: true,
-    message: `Product "${updated.name}" updated successfully.`,
+    message: !reval.success
+      ? `Product "${updated.name}" updated in database, but cache refresh incomplete: ${reval.warning}`
+      : `Product "${updated.name}" updated successfully.`,
     warning: reval.warning,
     data: updated,
   };
@@ -427,7 +432,9 @@ export async function restoreProductAction(
 
   return {
     success: true,
-    message: `Product "${updated.name}" has been restored and is now active on the storefront.`,
+    message: !reval.success
+      ? `Product "${updated.name}" restored in database, but cache refresh incomplete: ${reval.warning}`
+      : `Product "${updated.name}" has been restored and is now active on the storefront.`,
     warning: reval.warning,
     data: updated,
   };

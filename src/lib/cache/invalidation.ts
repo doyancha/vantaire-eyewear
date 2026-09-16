@@ -18,12 +18,14 @@ export type MutationEvent =
       type: "product_created";
       slug: string;
       collectionSlugs?: string[];
+      isActive?: boolean;
     }
   | {
       type: "product_updated";
       slug: string;
       oldSlug?: string;
       collectionSlugs?: string[];
+      isActive?: boolean;
     }
   | {
       type: "product_lifecycle";
@@ -45,11 +47,17 @@ export type MutationEvent =
   | {
       type: "collection_created";
       slug: string;
+      isActive?: boolean;
     }
   | {
       type: "collection_updated";
       slug: string;
       oldSlug?: string;
+      isActive?: boolean;
+    }
+  | {
+      type: "collection_cover_updated";
+      slug: string;
     }
   | {
       type: "collection_lifecycle";
@@ -69,7 +77,12 @@ export type MutationEvent =
 
 /**
  * Pure function to construct a deterministic, deduplicated, and sorted
- * invalidation plan (tags and paths) for any catalog or settings mutation.
+ *
+ * Strict dependency model:
+ * - Inactive drafts DO NOT invalidate public caches/paths.
+ * - /sitemap.xml is ONLY invalidated on product/collection lifecycle (activate/archive).
+ * - Dead tags (merchandising) are strictly eliminated.
+ * - Collection cover updates do NOT flush the products tag.
  */
 export function buildInvalidationPlan(event: MutationEvent): InvalidationPlan {
   const tags = new Set<string>();
@@ -77,57 +90,66 @@ export function buildInvalidationPlan(event: MutationEvent): InvalidationPlan {
 
   switch (event.type) {
     case "product_created": {
-      tags.add(CACHE_TAGS.products);
-      if (event.slug) {
-        tags.add(CACHE_TAGS.product(event.slug));
-        paths.add(`/products/${event.slug}`);
-      }
-      if (event.collectionSlugs) {
-        for (const col of event.collectionSlugs) {
-          if (col) {
-            tags.add(CACHE_TAGS.collection(col));
-            paths.add(`/collections/${col}`);
-          }
-        }
-      }
-      paths.add("/");
-      paths.add("/shop");
-      paths.add("/collections");
-      paths.add("/sitemap.xml");
+      // Admin dashboard and inventory surfaces always refresh
       paths.add("/admin");
       paths.add("/admin/products");
+
+      // Inactive draft product creation produces 0 public cache tags / public routes
+      if (event.isActive) {
+        tags.add(CACHE_TAGS.products);
+        if (event.slug) {
+          tags.add(CACHE_TAGS.product(event.slug));
+          paths.add(`/products/${event.slug}`);
+        }
+        if (event.collectionSlugs) {
+          for (const col of event.collectionSlugs) {
+            if (col) {
+              tags.add(CACHE_TAGS.collection(col));
+              paths.add(`/collections/${col}`);
+            }
+          }
+        }
+        paths.add("/");
+        paths.add("/shop");
+        paths.add("/collections");
+        paths.add("/sitemap.xml");
+      }
       break;
     }
 
     case "product_updated": {
-      tags.add(CACHE_TAGS.products);
-      if (event.slug) {
-        tags.add(CACHE_TAGS.product(event.slug));
-        paths.add(`/products/${event.slug}`);
-      }
-      if (event.oldSlug && event.oldSlug !== event.slug) {
-        tags.add(CACHE_TAGS.product(event.oldSlug));
-        paths.add(`/products/${event.oldSlug}`);
-      }
-      if (event.collectionSlugs) {
-        for (const col of event.collectionSlugs) {
-          if (col) {
-            tags.add(CACHE_TAGS.collection(col));
-            paths.add(`/collections/${col}`);
-          }
-        }
-      }
-      paths.add("/");
-      paths.add("/shop");
-      paths.add("/collections");
-      paths.add("/sitemap.xml");
       paths.add("/admin");
       paths.add("/admin/products");
       paths.add("/admin/merchandising");
+
+      // Inactive product metadata edits do not flush public storefront
+      if (event.isActive !== false) {
+        tags.add(CACHE_TAGS.products);
+        if (event.slug) {
+          tags.add(CACHE_TAGS.product(event.slug));
+          paths.add(`/products/${event.slug}`);
+        }
+        if (event.oldSlug && event.oldSlug !== event.slug) {
+          tags.add(CACHE_TAGS.product(event.oldSlug));
+          paths.add(`/products/${event.oldSlug}`);
+        }
+        if (event.collectionSlugs) {
+          for (const col of event.collectionSlugs) {
+            if (col) {
+              tags.add(CACHE_TAGS.collection(col));
+              paths.add(`/collections/${col}`);
+            }
+          }
+        }
+        paths.add("/");
+        paths.add("/shop");
+        paths.add("/collections");
+      }
       break;
     }
 
     case "product_lifecycle": {
+      // Product activation or archive alters public URL membership -> flushes sitemap
       tags.add(CACHE_TAGS.products);
       if (event.slug) {
         tags.add(CACHE_TAGS.product(event.slug));
@@ -144,7 +166,7 @@ export function buildInvalidationPlan(event: MutationEvent): InvalidationPlan {
       paths.add("/");
       paths.add("/shop");
       paths.add("/collections");
-      paths.add("/sitemap.xml");
+      paths.add("/sitemap.xml"); // Mandatory on lifecycle change
       paths.add("/admin");
       paths.add("/admin/products");
       paths.add("/admin/merchandising");
@@ -160,7 +182,6 @@ export function buildInvalidationPlan(event: MutationEvent): InvalidationPlan {
       paths.add("/");
       paths.add("/shop");
       paths.add("/collections");
-      paths.add("/sitemap.xml");
       paths.add("/admin");
       paths.add("/admin/products");
       paths.add(`/admin/products/${event.productId}/media`);
@@ -173,7 +194,6 @@ export function buildInvalidationPlan(event: MutationEvent): InvalidationPlan {
       paths.add("/");
       paths.add("/shop");
       paths.add("/collections");
-      paths.add("/sitemap.xml");
       paths.add("/admin");
       paths.add("/admin/merchandising");
       paths.add("/admin/products");
@@ -189,7 +209,6 @@ export function buildInvalidationPlan(event: MutationEvent): InvalidationPlan {
       paths.add("/");
       paths.add("/shop");
       paths.add("/collections");
-      paths.add("/sitemap.xml");
       paths.add("/admin");
       paths.add("/admin/merchandising");
       paths.add("/admin/products");
@@ -197,42 +216,61 @@ export function buildInvalidationPlan(event: MutationEvent): InvalidationPlan {
     }
 
     case "collection_created": {
-      tags.add(CACHE_TAGS.collections);
-      if (event.slug) {
-        tags.add(CACHE_TAGS.collection(event.slug));
-        paths.add(`/collections/${event.slug}`);
-      }
-      paths.add("/");
-      paths.add("/shop");
-      paths.add("/collections");
-      paths.add("/sitemap.xml");
       paths.add("/admin");
       paths.add("/admin/collections");
+
+      // Inactive draft collection creation produces 0 public cache tags / public routes
+      if (event.isActive) {
+        tags.add(CACHE_TAGS.collections);
+        if (event.slug) {
+          tags.add(CACHE_TAGS.collection(event.slug));
+          paths.add(`/collections/${event.slug}`);
+        }
+        paths.add("/");
+        paths.add("/collections");
+        paths.add("/sitemap.xml");
+      }
       break;
     }
 
     case "collection_updated": {
+      paths.add("/admin");
+      paths.add("/admin/collections");
+      paths.add("/admin/merchandising");
+
+      if (event.isActive !== false) {
+        tags.add(CACHE_TAGS.collections);
+        if (event.slug) {
+          tags.add(CACHE_TAGS.collection(event.slug));
+          paths.add(`/collections/${event.slug}`);
+        }
+        if (event.oldSlug && event.oldSlug !== event.slug) {
+          tags.add(CACHE_TAGS.collection(event.oldSlug));
+          paths.add(`/collections/${event.oldSlug}`);
+        }
+        paths.add("/");
+        paths.add("/collections");
+      }
+      break;
+    }
+
+    case "collection_cover_updated": {
+      // Explicit event for cover image upload/replace/remove
+      // Flushes collection caches but does NOT touch products or sitemap
       tags.add(CACHE_TAGS.collections);
       if (event.slug) {
         tags.add(CACHE_TAGS.collection(event.slug));
         paths.add(`/collections/${event.slug}`);
       }
-      if (event.oldSlug && event.oldSlug !== event.slug) {
-        tags.add(CACHE_TAGS.collection(event.oldSlug));
-        paths.add(`/collections/${event.oldSlug}`);
-      }
       paths.add("/");
-      paths.add("/shop");
       paths.add("/collections");
-      paths.add("/sitemap.xml");
       paths.add("/admin");
       paths.add("/admin/collections");
-      paths.add("/admin/merchandising");
       break;
     }
 
     case "collection_lifecycle": {
-      // Cross-module dependency: Collection activation status affects product badges and filters
+      // Cross-module dependency: Collection activation/archive alters public URL membership and product badges
       tags.add(CACHE_TAGS.collections);
       tags.add(CACHE_TAGS.products);
       if (event.slug) {
@@ -242,7 +280,7 @@ export function buildInvalidationPlan(event: MutationEvent): InvalidationPlan {
       paths.add("/");
       paths.add("/shop");
       paths.add("/collections");
-      paths.add("/sitemap.xml");
+      paths.add("/sitemap.xml"); // Mandatory on lifecycle change
       paths.add("/admin");
       paths.add("/admin/collections");
       paths.add("/admin/merchandising");
@@ -268,7 +306,6 @@ export function buildInvalidationPlan(event: MutationEvent): InvalidationPlan {
       paths.add("/");
       paths.add("/shop");
       paths.add("/collections");
-      paths.add("/sitemap.xml");
       paths.add("/admin");
       paths.add("/admin/collections");
       paths.add("/admin/merchandising");
@@ -278,9 +315,7 @@ export function buildInvalidationPlan(event: MutationEvent): InvalidationPlan {
     case "collection_reordered": {
       tags.add(CACHE_TAGS.collections);
       paths.add("/");
-      paths.add("/shop");
       paths.add("/collections");
-      paths.add("/sitemap.xml");
       paths.add("/admin");
       paths.add("/admin/merchandising");
       paths.add("/admin/collections");
@@ -288,6 +323,7 @@ export function buildInvalidationPlan(event: MutationEvent): InvalidationPlan {
     }
 
     case "site_settings_updated": {
+      // Settings mutations do NOT change sitemap URLs (base URL is statically derived)
       tags.add(CACHE_TAGS.siteSettings);
       paths.add("/");
       paths.add("/contact");
@@ -296,7 +332,6 @@ export function buildInvalidationPlan(event: MutationEvent): InvalidationPlan {
       paths.add("/returns");
       paths.add("/shop");
       paths.add("/collections");
-      paths.add("/sitemap.xml");
       paths.add("/admin");
       paths.add("/admin/settings");
       break;
@@ -310,18 +345,32 @@ export function buildInvalidationPlan(event: MutationEvent): InvalidationPlan {
 }
 
 /**
+ * Dependency injection options for testing invalidation failure handling
+ */
+export interface InvalidationExecutorOptions {
+  tagRevalidator?: (tag: string) => void;
+  pathRevalidator?: (path: string) => void;
+}
+
+/**
  * Executes revalidation for all tags and paths in the provided plan.
  * Safe to execute in server actions; catches isolated context warnings
  * without interrupting successful database transactions.
  */
-export function applyInvalidationPlan(plan: InvalidationPlan): InvalidationResult {
+export function applyInvalidationPlan(
+  plan: InvalidationPlan,
+  options?: InvalidationExecutorOptions
+): InvalidationResult {
+  const revalidateTagFn = options?.tagRevalidator ?? revalidateTag;
+  const revalidatePathFn = options?.pathRevalidator ?? revalidatePath;
+
   const revalidatedTags: string[] = [];
   const revalidatedPaths: string[] = [];
   const warnings: string[] = [];
 
   for (const tag of plan.tags) {
     try {
-      revalidateTag(tag);
+      revalidateTagFn(tag);
       revalidatedTags.push(tag);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -331,7 +380,7 @@ export function applyInvalidationPlan(plan: InvalidationPlan): InvalidationResul
 
   for (const path of plan.paths) {
     try {
-      revalidatePath(path);
+      revalidatePathFn(path);
       revalidatedPaths.push(path);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
