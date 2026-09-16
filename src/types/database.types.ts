@@ -60,7 +60,7 @@ export type Database = {
       }
       collections: {
         Row: {
-          cover_image: string
+          cover_image: string | null
           created_at: string
           description: string
           id: string
@@ -72,7 +72,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          cover_image: string
+          cover_image?: string | null
           created_at?: string
           description: string
           id?: string
@@ -84,7 +84,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          cover_image?: string
+          cover_image?: string | null
           created_at?: string
           description?: string
           id?: string
@@ -378,6 +378,18 @@ export type Database = {
       reorder_product_images: {
         Args: { p_image_ids: string[]; p_product_id: string }
         Returns: undefined
+      }
+      set_collection_products: {
+        Args: {
+          p_collection_id: string
+          p_expected_updated_at: string
+          p_product_ids: string[]
+        }
+        Returns: {
+          collection_id: string
+          member_count: number
+          updated_at: string
+        }[]
       }
       set_product_primary_image: {
         Args: { p_image_id: string; p_product_id: string }

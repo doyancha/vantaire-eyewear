@@ -138,6 +138,24 @@ export function buildProductStoragePath(
 }
 
 /**
+ * Constructs canonical, content-addressed storage path for collection cover:
+ * collections/{slug}/cover-{16hex}.{ext}
+ */
+export function buildCollectionCoverStoragePath(
+  collectionSlug: string,
+  prefix16: string,
+  extension: "jpg" | "png" | "webp"
+): string {
+  const sanitizedSlug = collectionSlug
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-");
+  return `collections/${sanitizedSlug}/cover-${prefix16}.${extension}`;
+}
+
+/**
  * Validates alt text.
  */
 export function validateAltText(altText: string): { success: true; value: string } | { success: false; error: string } {

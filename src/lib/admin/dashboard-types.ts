@@ -18,7 +18,7 @@ export interface CollectionSummary {
   slug: string;
   isActive: boolean;
   productCount: number;
-  coverImage: string;
+  coverImage: string | null;
 }
 
 export interface CollectionsMetrics {

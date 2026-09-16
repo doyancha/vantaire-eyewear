@@ -114,6 +114,10 @@ export function mapDbCollection(
   row: any,
   options?: { resolveStorageUrls?: boolean }
 ): CollectionMeta {
+  if (row.is_active && (!row.cover_image || typeof row.cover_image !== "string" || row.cover_image.trim().length === 0)) {
+    throw new Error(`Invariant violation: Active collection '${row.slug || row.id}' is missing required cover_image`);
+  }
+
   const resolveUrls = options?.resolveStorageUrls ?? true;
   const coverImage =
     resolveUrls && row.cover_image

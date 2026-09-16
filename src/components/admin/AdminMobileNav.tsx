@@ -87,11 +87,10 @@ export function AdminMobileNav({
     },
     {
       name: "Collections",
-      href: "#",
+      href: "/admin/collections",
       icon: Layers,
-      active: false,
-      enabled: false,
-      badge: "Phase 8",
+      active: pathname.startsWith("/admin/collections"),
+      enabled: true,
     },
     {
       name: "Media Library",

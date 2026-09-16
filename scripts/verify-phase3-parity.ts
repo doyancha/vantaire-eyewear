@@ -145,7 +145,7 @@ async function runParityVerification() {
     const descMatch = dbCol.description === staticCol.description;
     const imgMatch =
       dbCol.cover_image === staticCol.coverImage ||
-      dbCol.cover_image.startsWith(`collections/${staticCol.slug}/cover-`) ||
+      (dbCol.cover_image?.startsWith(`collections/${staticCol.slug}/cover-`) ?? false) ||
       dbCol.cover_image === `collections/collection-${staticCol.slug}.jpg`;
     const activeMatch = dbCol.is_active === true;
     const sortMatch = dbCol.sort_order === i;
@@ -305,7 +305,7 @@ async function runParityVerification() {
     tagline: c.tagline,
     description: c.description,
     cover_image:
-      c.cover_image.startsWith(`collections/${c.slug}/cover-`) ||
+      (c.cover_image?.startsWith(`collections/${c.slug}/cover-`) ?? false) ||
       c.cover_image === `collections/collection-${c.slug}.jpg`
         ? `/images/collections/collection-${c.slug}.jpg`
         : c.cover_image,

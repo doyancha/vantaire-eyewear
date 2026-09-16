@@ -44,3 +44,35 @@ export async function revalidateProductCaches(options: RevalidateProductOptions 
     console.warn("[revalidateProductCaches] Cache revalidation notice:", err);
   }
 }
+
+interface RevalidateCollectionOptions {
+  slug?: string;
+}
+
+/**
+ * Revalidates public storefront and admin cache tags and paths following a collection mutation.
+ */
+export async function revalidateCollectionCaches(options: RevalidateCollectionOptions = {}) {
+  try {
+    // 1. Global collection tag
+    revalidateTag(CACHE_TAGS.collections);
+
+    // 2. Specific collection tag and route
+    if (options.slug) {
+      revalidateTag(CACHE_TAGS.collection(options.slug));
+      revalidatePath(`/collections/${options.slug}`);
+    }
+
+    // 3. Storefront navigation, listings, and sitemap
+    revalidatePath("/collections");
+    revalidatePath("/shop");
+    revalidatePath("/");
+    revalidatePath("/sitemap.xml");
+
+    // 4. Admin backoffice listings
+    revalidatePath("/admin/collections");
+    revalidatePath("/admin");
+  } catch (err) {
+    console.warn("[revalidateCollectionCaches] Cache revalidation notice:", err);
+  }
+}
