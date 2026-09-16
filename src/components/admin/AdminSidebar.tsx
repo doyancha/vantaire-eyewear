@@ -21,6 +21,15 @@ interface AdminSidebarProps {
   role: string;
 }
 
+interface AdminNavItem {
+  name: string;
+  href: string;
+  icon: any;
+  active: boolean;
+  enabled: boolean;
+  badge?: string;
+}
+
 export function AdminSidebar({
   userEmail,
   displayName,
@@ -28,7 +37,7 @@ export function AdminSidebar({
 }: AdminSidebarProps) {
   const pathname = usePathname();
 
-  const navItems = [
+  const navItems: AdminNavItem[] = [
     {
       name: "Overview",
       href: "/admin",
@@ -66,11 +75,10 @@ export function AdminSidebar({
     },
     {
       name: "Site Settings",
-      href: "#",
+      href: "/admin/settings",
       icon: Settings,
-      active: false,
-      enabled: false,
-      badge: "Phase 11",
+      active: pathname.startsWith("/admin/settings"),
+      enabled: true,
     },
   ];
 

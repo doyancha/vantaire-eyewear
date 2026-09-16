@@ -13,6 +13,7 @@ interface ProductInfoProps {
 
 export function ProductInfo({ product, settings }: ProductInfoProps) {
   const whatsappUrl = buildProductWhatsAppUrl(product, { settings });
+  const delivery = settings?.delivery || siteConfig.delivery;
 
   return (
     <div className="space-y-6">
@@ -78,7 +79,7 @@ export function ProductInfo({ product, settings }: ProductInfoProps) {
         </WhatsAppButton>
 
         <p className="text-[11px] text-vantaire-muted text-center">
-          Payment via Cash on Delivery • Estimated {siteConfig.delivery.insideDhakaTime} in Dhaka
+          Payment via {delivery.cashOnDelivery ? "Cash on Delivery" : "Advance Payment"} • Estimated {delivery.insideDhakaTime} in Dhaka
         </p>
       </div>
 
@@ -127,7 +128,7 @@ export function ProductInfo({ product, settings }: ProductInfoProps) {
           In the signature package:
         </p>
         <p className="leading-relaxed">
-          {siteConfig.delivery.packaging}
+          {delivery.packaging}
         </p>
       </div>
 
@@ -135,7 +136,7 @@ export function ProductInfo({ product, settings }: ProductInfoProps) {
       <div className="pt-4 border-t border-vantaire-border/60 grid grid-cols-2 gap-4 text-xs">
         <div className="flex items-center gap-2.5 text-vantaire-sand">
           <Truck className="w-4 h-4 text-vantaire-champagne flex-shrink-0" />
-          <span>Inside Dhaka: ৳{siteConfig.delivery.feeInsideDhaka} ({siteConfig.delivery.insideDhakaTime})</span>
+          <span>Inside Dhaka: {delivery.currencySymbol}{delivery.feeInsideDhaka} ({delivery.insideDhakaTime})</span>
         </div>
         <div className="flex items-center gap-2.5 text-vantaire-sand">
           <Sparkles className="w-4 h-4 text-vantaire-champagne flex-shrink-0" />

@@ -2,8 +2,20 @@ import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { siteConfig } from "@/lib/config";
 import { buildGeneralWhatsAppUrl } from "@/lib/whatsapp";
 import { Clock, ShieldCheck, MapPin } from "lucide-react";
+import type { OperationalSettings } from "@/lib/data/mappers";
 
-export function FinalCtaSection() {
+interface FinalCtaSectionProps {
+  settings?: OperationalSettings;
+}
+
+export function FinalCtaSection({ settings }: FinalCtaSectionProps = {}) {
+  const delivery = settings?.delivery || siteConfig.delivery;
+  const contact = settings?.contact || siteConfig.contact;
+  const whatsappUrl = buildGeneralWhatsAppUrl(
+    "Hello VANTAIRE EYEWEAR, I would like to order a pair of sunglasses and confirm delivery.",
+    settings
+  );
+
   return (
     <section className="relative py-20 lg:py-28 bg-gradient-to-b from-vantaire-black via-vantaire-charcoal to-vantaire-black border-t border-vantaire-border/60">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
@@ -21,7 +33,7 @@ export function FinalCtaSection() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
           <WhatsAppButton
-            href={buildGeneralWhatsAppUrl("Hello VANTAIRE EYEWEAR, I would like to order a pair of sunglasses and confirm delivery.")}
+            href={whatsappUrl}
             size="lg"
             variant="primary"
             className="w-full sm:w-auto"
@@ -34,15 +46,15 @@ export function FinalCtaSection() {
         <div className="pt-10 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs text-vantaire-muted">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-vantaire-champagne" />
-            <span>{siteConfig.delivery.insideDhakaTime} in Dhaka</span>
+            <span>{delivery.insideDhakaTime} in Dhaka</span>
           </div>
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-vantaire-champagne" />
-            <span>Cash on Delivery Available</span>
+            <span>{delivery.cashOnDelivery ? "Cash on Delivery Available" : "Advance Payment Required"}</span>
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-vantaire-champagne" />
-            <span>{siteConfig.contact.serviceArea}</span>
+            <span>{contact.serviceArea}</span>
           </div>
         </div>
       </div>

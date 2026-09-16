@@ -1,14 +1,20 @@
-"use client";
-
-import { useState } from "react";
+import { Metadata } from "next";
 import { siteConfig } from "@/lib/config";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { buildGeneralWhatsAppUrl } from "@/lib/whatsapp";
-import { ChevronDown } from "lucide-react";
+import { getSiteSettings } from "@/lib/data/storefront";
+import { FaqAccordion } from "./FaqAccordion";
 
-export default function FaqPage() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+export const metadata: Metadata = {
+  title: "Frequently Asked Questions",
+  description: "Clear answers regarding our WhatsApp ordering process, optics, and nationwide delivery.",
+};
+
+export default async function FaqPage() {
+  const settings = await getSiteSettings();
+  const delivery = settings?.delivery || siteConfig.delivery;
+  const whatsappUrl = buildGeneralWhatsAppUrl(undefined, settings);
 
   const faqs = [
     {
@@ -17,11 +23,13 @@ export default function FaqPage() {
     },
     {
       q: "Is Cash on Delivery (COD) available?",
-      a: "Yes, Cash on Delivery is available for deliveries across Bangladesh. Advance payment may be requested for selected orders or remote delivery locations only. You can also pay via bKash/Nagad upon coordination with our concierge."
+      a: delivery.cashOnDelivery
+        ? "Yes, Cash on Delivery is available for deliveries across Bangladesh. Advance payment may be requested for selected orders or remote delivery locations only. You can also pay via bKash/Nagad upon coordination with our concierge."
+        : "Advance payment is currently required for order confirmation and dispatch across Bangladesh. You can coordinate your payment directly with our concierge on WhatsApp."
     },
     {
       q: "What are the delivery charges and estimated times?",
-      a: `Inside Dhaka: Estimated delivery takes ${siteConfig.delivery.insideDhakaTime} with a delivery fee of ${siteConfig.delivery.currencySymbol}${siteConfig.delivery.feeInsideDhaka}. Outside Dhaka (Nationwide): Estimated delivery takes ${siteConfig.delivery.outsideDhakaTime} with a delivery fee of ${siteConfig.delivery.currencySymbol}${siteConfig.delivery.feeOutsideDhaka}.`
+      a: `Inside Dhaka: Estimated delivery takes ${delivery.insideDhakaTime} with a delivery fee of ${delivery.currencySymbol}${delivery.feeInsideDhaka}. Outside Dhaka (Nationwide): Estimated delivery takes ${delivery.outsideDhakaTime} with a delivery fee of ${delivery.currencySymbol}${delivery.feeOutsideDhaka}.`
     },
     {
       q: "Are VANTAIRE sunglasses UV-protective and polarized?",
@@ -37,7 +45,7 @@ export default function FaqPage() {
     },
     {
       q: "What comes inside the package with my sunglasses?",
-      a: `Every pair is delivered with our ${siteConfig.delivery.packaging}`
+      a: `Every pair is delivered with our ${delivery.packaging}`
     },
     {
       q: "Can I request live photos of the sunglasses before ordering?",
@@ -53,39 +61,7 @@ export default function FaqPage() {
         subtitle="Clear answers regarding our WhatsApp ordering process, optics, and nationwide delivery."
       />
 
-      <div className="space-y-4">
-        {faqs.map((faq, idx) => {
-          const isOpen = openIndex === idx;
-          return (
-            <div
-              key={idx}
-              className="bg-vantaire-charcoal/40 border border-vantaire-border/80 transition-colors duration-200"
-            >
-              <button
-                type="button"
-                onClick={() => setOpenIndex(isOpen ? null : idx)}
-                className="w-full text-left p-5 flex items-center justify-between gap-4 focus:outline-none"
-                aria-expanded={isOpen}
-              >
-                <span className="font-serif text-base sm:text-lg text-vantaire-warmWhite">
-                  {faq.q}
-                </span>
-                <ChevronDown
-                  className={`w-5 h-5 text-vantaire-champagne transition-transform duration-200 flex-shrink-0 ${
-                    isOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {isOpen && (
-                <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-vantaire-sand/90 font-sans leading-relaxed border-t border-vantaire-border/40">
-                  {faq.a}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      <FaqAccordion items={faqs} />
 
       <div className="mt-16 text-center bg-vantaire-charcoal/30 border border-vantaire-border p-8 space-y-4">
         <h3 className="font-serif text-xl text-vantaire-warmWhite">Have a question not listed here?</h3>
@@ -93,7 +69,7 @@ export default function FaqPage() {
           Our team is available Saturday through Thursday on WhatsApp to answer any questions or check stock immediately.
         </p>
         <WhatsAppButton
-          href={buildGeneralWhatsAppUrl()}
+          href={whatsappUrl}
           size="md"
           variant="secondary"
         >

@@ -67,7 +67,10 @@ export function buildGeneralWhatsAppUrl(
   settings?: Partial<OperationalSettings>
 ): string {
   const whatsappNumber = settings?.whatsapp?.number || siteConfig.whatsapp.number;
-  const msg = customMessage || siteConfig.whatsapp.defaultGreeting;
+  const msg =
+    customMessage ||
+    settings?.whatsapp?.defaultGreeting ||
+    siteConfig.whatsapp.defaultGreeting;
   const cleanNumber = whatsappNumber.replace(/[^0-9]/g, "");
   return `https://wa.me/${cleanNumber}?text=${encodeURIComponent(msg)}`;
 }

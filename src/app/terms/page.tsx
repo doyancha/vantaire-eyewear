@@ -1,13 +1,17 @@
 import { Metadata } from "next";
 import { siteConfig } from "@/lib/config";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { getSiteSettings } from "@/lib/data/storefront";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
   description: "Terms and conditions of purchase for VANTAIRE EYEWEAR.",
 };
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const settings = await getSiteSettings();
+  const delivery = settings?.delivery || siteConfig.delivery;
+
   return (
     <div className="py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <SectionHeading
@@ -26,7 +30,7 @@ export default function TermsPage() {
 
         <h3 className="font-serif text-lg text-vantaire-warmWhite">2. Pricing & Currency</h3>
         <p>
-          All product prices are quoted in Bangladeshi Taka (BDT / ৳) and are inclusive of standard local taxes. Delivery charges (৳{siteConfig.delivery.feeInsideDhaka} within Dhaka, ৳{siteConfig.delivery.feeOutsideDhaka} nationwide) are added at the time of final confirmation.
+          All product prices are quoted in Bangladeshi Taka (BDT / ৳) and are inclusive of standard local taxes. Delivery charges ({delivery.currencySymbol}{delivery.feeInsideDhaka} within Dhaka, {delivery.currencySymbol}{delivery.feeOutsideDhaka} nationwide) are added at the time of final confirmation.
         </p>
 
         <h3 className="font-serif text-lg text-vantaire-warmWhite">3. Delivery & Courier Handover</h3>

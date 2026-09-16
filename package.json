@@ -28,7 +28,10 @@
     "verify:phase9": "tsx scripts/verify-phase9-collections.ts && tsx scripts/verify-phase9-collection-security.ts",
     "verify:phase10-merchandising": "tsx scripts/verify-phase10-merchandising.ts",
     "verify:phase10-merchandising-security": "tsx scripts/verify-phase10-merchandising-security.ts",
-    "verify:phase10": "tsx scripts/verify-phase10-merchandising.ts && tsx scripts/verify-phase10-merchandising-security.ts"
+    "verify:phase10": "tsx scripts/verify-phase10-merchandising.ts && tsx scripts/verify-phase10-merchandising-security.ts",
+    "verify:phase11-settings": "tsx scripts/verify-phase11-settings.ts",
+    "verify:phase11-settings-security": "tsx scripts/verify-phase11-settings-security.ts",
+    "verify:phase11": "tsx scripts/verify-phase11-settings.ts && tsx scripts/verify-phase11-settings-security.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",

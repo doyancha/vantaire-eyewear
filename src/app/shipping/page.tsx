@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { siteConfig } from "@/lib/config";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { getSiteSettings } from "@/lib/data/storefront";
 import { Truck, Clock, ShieldCheck, MapPin, AlertCircle } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -8,7 +9,10 @@ export const metadata: Metadata = {
   description: "Learn about VANTAIRE EYEWEAR delivery timelines, charges, and packaging standards across Bangladesh.",
 };
 
-export default function ShippingPage() {
+export default async function ShippingPage() {
+  const settings = await getSiteSettings();
+  const delivery = settings?.delivery || siteConfig.delivery;
+
   return (
     <div className="py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <SectionHeading
@@ -29,9 +33,9 @@ export default function ShippingPage() {
               Door-to-door express courier dispatch within Dhaka metro.
             </p>
             <div className="pt-2 border-t border-vantaire-border/50 text-xs space-y-1.5">
-              <p><strong>Estimated Time:</strong> {siteConfig.delivery.insideDhakaTime}</p>
-              <p><strong>Delivery Charge:</strong> ৳{siteConfig.delivery.feeInsideDhaka}</p>
-              <p><strong>Payment:</strong> Cash on Delivery (COD)</p>
+              <p><strong>Estimated Time:</strong> {delivery.insideDhakaTime}</p>
+              <p><strong>Delivery Charge:</strong> {delivery.currencySymbol}{delivery.feeInsideDhaka}</p>
+              <p><strong>Payment:</strong> {delivery.cashOnDelivery ? "Cash on Delivery (COD)" : "Advance Payment Required"}</p>
             </div>
           </div>
 
@@ -44,9 +48,9 @@ export default function ShippingPage() {
               Reliable delivery covering all 64 districts via registered express courier.
             </p>
             <div className="pt-2 border-t border-vantaire-border/50 text-xs space-y-1.5">
-              <p><strong>Estimated Time:</strong> {siteConfig.delivery.outsideDhakaTime}</p>
-              <p><strong>Delivery Charge:</strong> ৳{siteConfig.delivery.feeOutsideDhaka}</p>
-              <p><strong>Payment:</strong> Cash on Delivery (COD)</p>
+              <p><strong>Estimated Time:</strong> {delivery.outsideDhakaTime}</p>
+              <p><strong>Delivery Charge:</strong> {delivery.currencySymbol}{delivery.feeOutsideDhaka}</p>
+              <p><strong>Payment:</strong> {delivery.cashOnDelivery ? "Cash on Delivery (COD)" : "Advance Payment Required"}</p>
             </div>
           </div>
         </div>
@@ -58,9 +62,18 @@ export default function ShippingPage() {
             <span>Payment & Delivery Guidelines</span>
           </div>
           <p className="text-vantaire-sand/90 leading-relaxed">
-            • Cash on Delivery (COD) is available across Bangladesh.<br />
-            • Advance payment may be requested for selected orders or remote delivery locations only.<br />
-            • All delivery timelines are reasonable estimates; adverse weather, regional holidays, or courier disruptions may cause slight logistical delays.
+            {delivery.cashOnDelivery ? (
+              <>
+                • Cash on Delivery (COD) is available across Bangladesh.<br />
+                • Advance payment may be requested for selected orders or remote delivery locations only.<br />
+                • All delivery timelines are reasonable estimates; adverse weather, regional holidays, or courier disruptions may cause slight logistical delays.
+              </>
+            ) : (
+              <>
+                • Advance payment is required for all orders.<br />
+                • All delivery timelines are reasonable estimates; adverse weather, regional holidays, or courier disruptions may cause slight logistical delays.
+              </>
+            )}
           </p>
         </div>
 

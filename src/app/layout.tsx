@@ -3,6 +3,7 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import { StorefrontChrome } from "@/components/layout/StorefrontChrome";
 import { siteConfig } from "@/lib/config";
+import { getSiteSettings } from "@/lib/data/storefront";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -75,17 +76,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await getSiteSettings();
+
   return (
     <html lang="en" className="dark">
       <body
         className={`${playfair.variable} ${inter.variable} font-sans bg-vantaire-black text-vantaire-warmWhite antialiased selection:bg-vantaire-champagne selection:text-vantaire-black flex flex-col min-h-screen`}
       >
-        <StorefrontChrome>{children}</StorefrontChrome>
+        <StorefrontChrome settings={settings}>{children}</StorefrontChrome>
       </body>
     </html>
   );

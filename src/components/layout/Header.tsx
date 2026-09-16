@@ -7,8 +7,14 @@ import { Wordmark } from "@/components/ui/Wordmark";
 import { Menu, X, MessageCircle, ChevronDown } from "lucide-react";
 import { buildGeneralWhatsAppUrl } from "@/lib/whatsapp";
 import { COLLECTIONS_META } from "@/data/products";
+import { siteConfig } from "@/lib/config";
+import type { OperationalSettings } from "@/lib/data/mappers";
 
-export function Header() {
+interface HeaderProps {
+  settings?: OperationalSettings;
+}
+
+export function Header({ settings }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [collectionsOpen, setCollectionsOpen] = useState(false);
@@ -177,7 +183,7 @@ export function Header() {
           {/* WhatsApp Direct Concierge CTA */}
           <div className="flex items-center space-x-4">
             <a
-              href={buildGeneralWhatsAppUrl()}
+              href={buildGeneralWhatsAppUrl(undefined, settings)}
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:inline-flex items-center gap-2 text-xs uppercase tracking-wider bg-emerald-600/90 hover:bg-emerald-500 text-white px-4 py-2.5 transition-all shadow-sm active:scale-95 border border-emerald-500/40"
@@ -293,7 +299,7 @@ export function Header() {
           {/* Bottom Concierge / Actions Bar */}
           <div className="pt-6 border-t border-vantaire-border/60 space-y-3">
             <a
-              href={buildGeneralWhatsAppUrl()}
+              href={buildGeneralWhatsAppUrl(undefined, settings)}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full flex items-center justify-center gap-2.5 text-xs uppercase tracking-luxury bg-emerald-600 hover:bg-emerald-500 text-white py-3.5 font-semibold shadow-lg shadow-emerald-950/50"
@@ -302,7 +308,7 @@ export function Header() {
               <span>WhatsApp Concierge</span>
             </a>
             <p className="text-center text-[10px] text-vantaire-muted">
-              Nationwide Delivery across Bangladesh • Cash on Delivery
+              Nationwide Delivery across Bangladesh • {settings?.delivery?.cashOnDelivery ?? siteConfig.delivery.cashOnDelivery ? "Cash on Delivery" : "Direct Order Fulfillment"}
             </p>
           </div>
         </div>

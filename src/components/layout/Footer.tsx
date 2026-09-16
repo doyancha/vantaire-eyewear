@@ -4,7 +4,21 @@ import { siteConfig } from "@/lib/config";
 import { MessageCircle, ShieldCheck, Truck, RefreshCw, Sparkles } from "lucide-react";
 import { buildGeneralWhatsAppUrl } from "@/lib/whatsapp";
 
-export function Footer() {
+import type { OperationalSettings } from "@/lib/data/mappers";
+
+interface FooterProps {
+  settings?: OperationalSettings;
+}
+
+export function Footer({ settings }: FooterProps) {
+  const insideDhakaTime = settings?.delivery.insideDhakaTime ?? siteConfig.delivery.insideDhakaTime;
+  const outsideDhakaTime = settings?.delivery.outsideDhakaTime ?? siteConfig.delivery.outsideDhakaTime;
+  const displayNumber = settings?.whatsapp.displayNumber ?? siteConfig.whatsapp.displayNumber;
+  const hours = settings?.contact.hours ?? siteConfig.contact.hours;
+  const whatsappUrl = buildGeneralWhatsAppUrl(undefined, settings);
+  const instagram = settings?.social.instagram;
+  const facebook = settings?.social.facebook;
+
   return (
     <footer className="bg-vantaire-black border-t border-vantaire-border text-vantaire-muted">
       {/* Brand Trust Strip */}
@@ -28,7 +42,7 @@ export function Footer() {
             <Truck className="w-6 h-6 text-vantaire-champagne flex-shrink-0" />
             <div>
               <p className="text-xs uppercase tracking-luxury text-vantaire-warmWhite font-semibold">Nationwide Delivery</p>
-              <p className="text-[11px] text-vantaire-muted mt-0.5">{siteConfig.delivery.insideDhakaTime} in Dhaka • {siteConfig.delivery.outsideDhakaTime} nationwide</p>
+              <p className="text-[11px] text-vantaire-muted mt-0.5">{insideDhakaTime} in Dhaka • {outsideDhakaTime} nationwide</p>
             </div>
           </div>
           <div className="flex flex-col md:flex-row items-center gap-3">
@@ -49,16 +63,41 @@ export function Footer() {
           <p className="text-xs text-vantaire-muted tracking-wide max-w-sm leading-relaxed mt-4">
             {siteConfig.subTagline} Built for confident presence under the sun. All orders confirmed directly with our dedicated concierge on WhatsApp.
           </p>
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
             <a
-              href={buildGeneralWhatsAppUrl()}
+              href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-emerald-400 hover:text-emerald-300 font-semibold"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>WhatsApp: {siteConfig.whatsapp.displayNumber}</span>
+              <span>WhatsApp: {displayNumber}</span>
             </a>
+
+            {(instagram || facebook) && (
+              <div className="flex items-center gap-4 pt-2 text-xs text-vantaire-sand">
+                {instagram && (
+                  <a
+                    href={instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-vantaire-champagne transition-colors"
+                  >
+                    Instagram
+                  </a>
+                )}
+                {facebook && (
+                  <a
+                    href={facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-vantaire-champagne transition-colors"
+                  >
+                    Facebook
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -158,7 +197,7 @@ export function Footer() {
             </li>
             <li className="pt-2 text-[11px] text-vantaire-muted leading-relaxed">
               Concierge Hours:<br />
-              {siteConfig.contact.hours}
+              {hours}
             </li>
           </ul>
         </div>

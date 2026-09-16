@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { siteConfig } from "@/lib/config";
+import { getSiteSettings } from "@/lib/data/storefront";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { buildGeneralWhatsAppUrl } from "@/lib/whatsapp";
@@ -10,7 +11,18 @@ export const metadata: Metadata = {
   description: "Connect with VANTAIRE EYEWEAR. Direct WhatsApp concierge, customer service hours, and order inquiries across Bangladesh.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const settings = await getSiteSettings();
+
+  const whatsappDisplayNumber = settings.whatsapp.displayNumber || siteConfig.whatsapp.displayNumber;
+  const whatsappUrl = buildGeneralWhatsAppUrl(undefined, settings);
+  const hours = settings.contact.hours || siteConfig.contact.hours;
+  const fridayHours = settings.contact.fridayHours || siteConfig.contact.fridayHours;
+  const location = settings.contact.location || siteConfig.contact.location;
+  const serviceArea = settings.contact.serviceArea || siteConfig.contact.serviceArea;
+  const email = settings.contact.email || siteConfig.contact.email;
+  const phone = settings.contact.phone || siteConfig.contact.phone;
+
   return (
     <div className="py-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <SectionHeading
@@ -34,12 +46,12 @@ export default function ContactPage() {
             </p>
             <div className="p-4 bg-vantaire-black/70 border border-vantaire-border/80 text-xs text-vantaire-sand space-y-1">
               <span className="text-[10px] uppercase tracking-luxury text-vantaire-muted block">Direct Concierge Number</span>
-              <span className="font-mono text-sm font-semibold text-emerald-400">{siteConfig.whatsapp.displayNumber}</span>
+              <span className="font-mono text-sm font-semibold text-emerald-400">{whatsappDisplayNumber}</span>
             </div>
           </div>
 
           <WhatsAppButton
-            href={buildGeneralWhatsAppUrl()}
+            href={whatsappUrl}
             size="lg"
             variant="primary"
             className="w-full"
@@ -59,8 +71,8 @@ export default function ContactPage() {
               <Clock className="w-4 h-4 text-vantaire-champagne flex-shrink-0 mt-0.5" />
               <div>
                 <span className="font-semibold text-vantaire-warmWhite block">Concierge Hours</span>
-                <span className="text-vantaire-muted">{siteConfig.contact.hours}</span>
-                <span className="text-vantaire-muted/80 block mt-0.5">{siteConfig.contact.fridayHours}</span>
+                <span className="text-vantaire-muted">{hours}</span>
+                <span className="text-vantaire-muted/80 block mt-0.5">{fridayHours}</span>
               </div>
             </div>
 
@@ -68,8 +80,8 @@ export default function ContactPage() {
               <MapPin className="w-4 h-4 text-vantaire-champagne flex-shrink-0 mt-0.5" />
               <div>
                 <span className="font-semibold text-vantaire-warmWhite block">Location</span>
-                <span className="text-vantaire-muted">{siteConfig.contact.location}</span>
-                <span className="text-[11px] text-vantaire-champagne block mt-0.5">{siteConfig.contact.serviceArea}</span>
+                <span className="text-vantaire-muted">{location}</span>
+                <span className="text-[11px] text-vantaire-champagne block mt-0.5">{serviceArea}</span>
               </div>
             </div>
 
@@ -77,8 +89,8 @@ export default function ContactPage() {
               <Mail className="w-4 h-4 text-vantaire-champagne flex-shrink-0 mt-0.5" />
               <div>
                 <span className="font-semibold text-vantaire-warmWhite block">Email</span>
-                <a href={`mailto:${siteConfig.contact.email}`} className="text-vantaire-muted hover:text-vantaire-champagne transition-colors">
-                  {siteConfig.contact.email}
+                <a href={`mailto:${email}`} className="text-vantaire-muted hover:text-vantaire-champagne transition-colors">
+                  {email}
                 </a>
               </div>
             </div>
@@ -87,7 +99,7 @@ export default function ContactPage() {
               <Phone className="w-4 h-4 text-vantaire-champagne flex-shrink-0 mt-0.5" />
               <div>
                 <span className="font-semibold text-vantaire-warmWhite block">Customer Phone</span>
-                <span className="text-vantaire-muted">{siteConfig.contact.phone}</span>
+                <span className="text-vantaire-muted">{phone}</span>
               </div>
             </div>
           </div>

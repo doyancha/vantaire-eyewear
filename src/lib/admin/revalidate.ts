@@ -123,3 +123,29 @@ export async function revalidateMerchandisingCaches(options: RevalidateMerchandi
     console.warn("[revalidateMerchandisingCaches] Cache revalidation notice:", err);
   }
 }
+
+/**
+ * Revalidates public storefront and admin surfaces following site settings mutations.
+ */
+export async function revalidateSiteSettingsCaches() {
+  try {
+    // 1. Invalidate site-settings cache tag
+    revalidateTag(CACHE_TAGS.siteSettings);
+
+    // 2. Public storefront surfaces that consume operational configuration
+    revalidatePath("/");
+    revalidatePath("/contact");
+    revalidatePath("/shipping");
+    revalidatePath("/faq");
+    revalidatePath("/returns");
+    revalidatePath("/shop");
+    revalidatePath("/collections");
+    revalidatePath("/sitemap.xml");
+
+    // 3. Admin backoffice surfaces
+    revalidatePath("/admin/settings");
+    revalidatePath("/admin");
+  } catch (err) {
+    console.warn("[revalidateSiteSettingsCaches] Cache revalidation notice:", err);
+  }
+}

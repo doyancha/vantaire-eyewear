@@ -3,6 +3,7 @@ import { siteConfig } from "@/lib/config";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { buildGeneralWhatsAppUrl } from "@/lib/whatsapp";
+import { getSiteSettings } from "@/lib/data/storefront";
 import { RefreshCw, CheckCircle2, AlertCircle, HelpCircle } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -10,7 +11,8 @@ export const metadata: Metadata = {
   description: "Read the VANTAIRE EYEWEAR change-of-mind, size exchange, and damaged product guidelines.",
 };
 
-export default function ReturnsPage() {
+export default async function ReturnsPage() {
+  const settings = await getSiteSettings();
   return (
     <div className="py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <SectionHeading
@@ -93,7 +95,7 @@ export default function ReturnsPage() {
         {/* Action Button */}
         <div className="pt-4 text-center">
           <WhatsAppButton
-            href={buildGeneralWhatsAppUrl("Hello VANTAIRE Concierge, I would like to inquire about an order exchange or report an issue.")}
+            href={buildGeneralWhatsAppUrl("Hello VANTAIRE Concierge, I would like to inquire about an order exchange or report an issue.", settings)}
             size="md"
             variant="secondary"
           >
