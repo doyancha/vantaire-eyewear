@@ -14,7 +14,13 @@ export async function loginAction(
   const email = (formData.get("email") as string | null)?.trim() ?? "";
   const password = (formData.get("password") as string | null) ?? "";
 
-  if (!email || !password) {
+  if (
+    !email ||
+    !password ||
+    email.length > 254 ||
+    password.length > 1024 ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  ) {
     return { error: "Invalid credentials or unauthorized account." };
   }
 

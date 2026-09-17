@@ -12,6 +12,7 @@ import { StickyWhatsAppOrder } from "@/components/product/StickyWhatsAppOrder";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { siteConfig } from "@/lib/config";
+import { serializeJsonLd } from "@/lib/security/jsonld";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
@@ -105,7 +106,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     <div className="pb-24 pt-6">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

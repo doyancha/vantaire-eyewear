@@ -35,15 +35,23 @@
     "verify:phase12-cache-plan": "tsx scripts/verify-phase12-cache-plan.ts",
     "verify:phase12-cache-wrapper": "tsx scripts/verify-phase12-cache-wrapper.ts",
     "verify:phase12-runtime": "tsx scripts/verify-phase12-runtime.ts",
-    "verify:phase12": "tsx scripts/verify-phase12-cache-plan.ts && tsx scripts/verify-phase12-cache-wrapper.ts && tsx scripts/verify-phase12-runtime.ts"
+    "verify:phase12": "tsx scripts/verify-phase12-cache-plan.ts && tsx scripts/verify-phase12-cache-wrapper.ts && tsx scripts/verify-phase12-runtime.ts",
+    "verify:phase13-dependencies": "tsx scripts/verify-phase13-dependencies.ts",
+    "verify:phase13-auth": "tsx scripts/verify-phase13-auth.ts",
+    "verify:phase13-rls": "tsx scripts/verify-phase13-rls.ts",
+    "verify:phase13-functions": "tsx scripts/verify-phase13-functions.ts",
+    "verify:phase13-storage": "tsx scripts/verify-phase13-storage.ts",
+    "verify:phase13-web-security": "tsx scripts/verify-phase13-web-security.ts",
+    "verify:phase13-secrets": "tsx scripts/verify-phase13-secrets.ts",
+    "verify:phase13": "tsx scripts/verify-phase13-dependencies.ts && tsx scripts/verify-phase13-auth.ts && tsx scripts/verify-phase13-rls.ts && tsx scripts/verify-phase13-functions.ts && tsx scripts/verify-phase13-storage.ts && tsx scripts/verify-phase13-web-security.ts && tsx scripts/verify-phase13-secrets.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",
     "@supabase/supabase-js": "^2.116.0",
     "lucide-react": "^0.475.0",
     "next": "15.5.25",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "zod": "^4.5.4"
   },
   "devDependencies": {
